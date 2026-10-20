@@ -7,6 +7,7 @@ import { age, categories, division, fresh, getLayout, normalize, parseEvent, par
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
 import './Sidebar.css'
+import './Theme.css'
 
 const SIDEBAR_TABS = [
   { id: 'participants', label: 'Participants' },
@@ -178,8 +179,6 @@ function App() {
       </div>
     </header>
     <main>
-      <section className="intro"><div><div className="eyebrow">FROM SIGN-UP TO SHOWDOWN</div><h1>Your battle. Your lineup.</h1><p>Register the dancers, arrange the battles, and take it to the floor.</p></div><div className="stats"><strong>{event.people.length}<small>DANCERS</small></strong><strong>{event.styles.length}<small>STYLES</small></strong></div></section>
-      <section className="event-bar"><label>EVENT NAME<input value={event.title} onChange={e => setEvent({ ...event, title: e.target.value })} /></label><label>EVENT YEAR<input type="number" min="1900" max="2200" value={event.year} onChange={e => { const year = Number(e.target.value); if (year >= 1900 && year <= 2200) setEvent({ ...event, year }) }} /></label><p>Age = event year − birth year.<br />Event name and year do not appear on the printed bracket.</p></section>
       <nav className="tabs">
         <button className={tab === 'styles' ? 'active' : ''} onClick={() => setTab('styles')}>01 / Styles & divisions</button>
         <button className={tab === 'registration' ? 'active' : ''} onClick={() => setTab('registration')}>02 / Registration</button>
@@ -188,6 +187,7 @@ function App() {
       {message && <div className="notice" role="status">{message}<button onClick={() => setMessage('')}>Dismiss</button></div>}
       {tab === 'styles' && <section className="panel">
         <div className="panel-head"><div><h2>Styles & age divisions</h2><p>Define styles once, then select them for each dancer. Age divisions are optional for each style.</p></div></div>
+        <div className="age-reference"><label>AGE REFERENCE YEAR<input type="number" min="1900" max="2200" value={event.year} onChange={e => { const year = Number(e.target.value); if (year >= 1900 && year <= 2200) setEvent({ ...event, year }) }} /></label><p>Age is the age a dancer turns in this year.</p></div>
         <div className="style-config-list">{event.styles.map(s => {
           const count = event.people.filter(p => p.styles.includes(s.id)).length
           return <section className="style-config" key={s.id}>

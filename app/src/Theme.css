@@ -1,0 +1,80 @@
+/* Application-only colours. The A4 artboard always retains its own light palette. */
+.age-reference{display:flex;align-items:center;gap:20px;padding:0 25px 24px}
+.age-reference label{width:160px;flex-shrink:0}
+.age-reference p{font-size:12px;margin:15px 0 0}
+main>.tabs:first-child{margin-top:0}
+
+@media screen {
+  :root{color-scheme:dark;--app-bg:#111613;--surface:#1b231e;--raised:#232d26;--field:#141c17;--line:#354237;--text:#e7eee6;--muted:#a2b09d;--accent:#bad99b}
+  body{background:var(--app-bg);color:var(--text)}
+  .app-header{background:#171e19;border-color:var(--line)}
+  .brand>b{background:#2c4232;color:#d2e6b6}
+  .brand small,.save-status{color:var(--muted)}
+  button,.button{background:var(--raised);border-color:var(--line);color:var(--text)}
+  button:hover:not(:disabled),.button:hover{background:#2c392e;border-color:#698160}
+  input,select,td input{background:var(--field);color:var(--text);border-color:var(--line)}
+  input::placeholder{color:#7e8f7a;opacity:1}
+  input[type=checkbox],input[type=radio]{accent-color:var(--accent)}
+  .primary,button.primary{background:#bad99b;border-color:#bad99b;color:#182315}
+  .primary:hover:not(:disabled),button.primary:hover:not(:disabled){background:#cce8af;border-color:#cce8af}
+  p,.panel-bottom,.registration-filter span,.style-config-name small,.all-ages,.format-hint,.app-foot{color:var(--muted)}
+  .tabs{border-color:var(--line)}
+  .tabs button{background:transparent;color:var(--muted)}
+  .tabs button:hover{background:transparent;color:var(--text)}
+  .tabs .active{color:var(--accent);border-color:var(--accent)}
+  .panel,.sidebar{background:var(--surface);border-color:var(--line)}
+  th{background:#202b23;border-color:var(--line);color:#b0c0a9}
+  td{border-color:#2c372e}
+  td:first-child{color:#91a18a}
+  td input{border-color:transparent}
+  td input:focus{border-color:#8aa578}
+  .age,.panel-bottom button{color:var(--accent)}
+  .panel-bottom button{background:transparent}
+  .remove{background:transparent;color:#d8a792}
+  .style-config,.add-style{border-color:var(--line)}
+  .add-style{background:#18201b}
+  .style-picker summary,.style-options{background:var(--field);border-color:var(--line)}
+  .style-picker[open] summary{border-color:#81986e}
+  .division-badge{background:#2c3c2a;color:#c7ddb5}
+  .division-badge.pending,.notice,.warning{background:#392d20;border-color:#6d5535;color:#ecd3ad}
+  .style-tabs .active{background:#30422b;border-color:#69815a;color:#d4e9c0}
+  .sidebar-tabs{background:#111a14}
+  .sidebar-tabs button{background:transparent;border-color:transparent;color:var(--muted)}
+  .sidebar-tabs button[aria-selected="true"]{background:#30402c;border-color:#526c44;color:#dcf0c8;box-shadow:none}
+  .participant-count,.participants button span,.eyebrow{color:#b4c6a4}
+  .participants button{background:#222e24;border-color:var(--line);color:var(--text)}
+  .participants .chosen{background:#3c3425;border-color:#d1a76b}
+  .canvas{background:#0b110d;border:1px solid #2b372e}
+  .canvas-label{color:#9bac92}
+  .empty{color:var(--muted)}
+  .empty strong{color:var(--text)}
+  .sidebar details,.sidebar details.battle-round,.battle-round{border-color:var(--line)}
+  .round-number{background:#30422b;color:#d3e9bd}
+  .round-caption>span,.sidebar .battle-help,.sidebar .battle-sources,.sidebar .round-guidance{color:var(--muted)}
+  .battle-round>summary::after{color:#b4c6a4}
+  .battle-format legend{color:#b0c5a0}
+  .format-option,.sidebar .fixed-format{background:#222d24;border-color:var(--line);color:#ccdac3}
+  .format-option:has(input:checked){background:#30422b;border-color:#71885f}
+  .battle-card{background:#1e2a21;border-color:#3a4b39}
+  .battle-card.three-person{background:#30291e;border-color:#715b36}
+  .battle-card-heading>span{background:#33482f;color:#d0e3c1}
+  .three-person .battle-card-heading>span{background:#554127;color:#efd3a6}
+  .battle-grip,.matchup-vs{color:#a1b294}
+  .matchup-person{background:#2b3c29;border-color:#485f3d;color:#e3efd9}
+  .three-person .matchup-person{background:#463722;border-color:#6e5430;color:#f3dfbb}
+  .battle-card .battle-move{border-color:#3c4a36}
+  .battle-card .battle-move>span{color:var(--muted)}
+  .battle-move .battle-move-button{background:#253323;border-color:#4b6141;color:#d4e7c6;box-shadow:none}
+  .battle-move .battle-move-button:hover:not(:disabled){background:#3a4c30;border-color:#8ba874}
+  .battle-card.drop-target{background:#354b2b;border-color:#b1d38e;box-shadow:0 0 0 2px #9cc77b55}
+
+  /* Explicitly isolate the paper from the surrounding dark interface and native controls. */
+  .paper{color-scheme:light;background:#fff;color:#222}
+  .paper .slot,.paper .slot:hover{background:transparent;color:inherit;border:0}
+  .paper .empty{color:#777}
+}
+
+@media print {
+  :root{color-scheme:light}
+  body,.paper{background:#fff;color:#222}
+}
