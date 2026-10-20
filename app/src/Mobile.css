@@ -1,0 +1,60 @@
+.mobile-registration-sort{display:none}
+
+@media screen and (max-width:850px){
+  .app-header.page-header{padding:8px}
+  .page-nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px}
+  .page-nav button:not(.style-picker-trigger):has(>.lucide){display:flex;flex-direction:column;gap:7px;min-width:0;padding:10px 3px;font-size:11px;line-height:1.25;white-space:normal;text-align:center;align-self:stretch}
+  .page-nav button:last-child{margin-left:0}
+  .page-nav button .lucide{width:24px;height:24px}
+  main{padding:20px 12px}
+  .workspace{grid-template-columns:minmax(0,1fr)}
+  .workspace>.canvas{grid-row:1;min-width:0;padding:12px}
+  .workspace>.sidebar{grid-row:2;min-width:0;padding:18px}
+  .canvas-label{flex-wrap:wrap;line-height:1.5;margin-bottom:12px}
+  .toolbar{min-width:0}
+  .toolbar>.actions{width:100%;flex-wrap:wrap}
+  .style-tabs{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:8px}
+  .style-tabs button{flex-shrink:0}
+  .panel-head{padding:18px}
+  .panel-bottom{padding:18px;flex-wrap:wrap;gap:12px}
+  .registration-filter{padding:0 18px 18px;flex-wrap:wrap;gap:10px}
+  .registration-filter-control{width:100%}
+  .registration-filter>span{padding:0}
+  .registration-warning{margin-inline:18px}
+  .mobile-registration-sort{display:block;padding:0 18px 16px}
+  .mobile-registration-sort button{width:100%;min-height:44px;font-size:12px}
+  .registration-sort-status{padding-inline:18px;flex-wrap:wrap}
+  .registration-table-wrap{overflow:visible;padding:0 14px 14px}
+  .registration-table{display:block;min-width:0;width:100%}
+  .registration-table thead{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+  .registration-table tbody{display:grid;gap:14px}
+  .registration-table tr{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px 12px;padding:16px;border:1px solid var(--line,#363d49);border-radius:9px;background:var(--field,#15181e);position:relative}
+  .registration-table td{display:block;min-width:0;width:auto;padding:0;border:0}
+  .registration-table td::before{content:attr(data-label);display:block;font-size:10px;line-height:1.5;letter-spacing:.6px;font-weight:700;text-transform:uppercase;color:var(--muted,#a3adbd);margin-bottom:6px}
+  .registration-table td:first-child{grid-column:1/-1;padding:0;font-size:12px;font-weight:700;color:var(--muted,#a3adbd);min-height:28px;display:flex;align-items:center}
+  .registration-table td:first-child::before{content:'Dancer';margin:0 5px 0 0;font-size:12px;text-transform:none;letter-spacing:0}
+  .registration-table td:nth-child(2),.registration-table td:nth-child(3),.registration-table .registration-styles,.registration-table .division-cell{grid-column:1/-1}
+  .registration-table td input{width:100%;min-height:44px;font-size:16px;border-color:var(--line,#363d49)}
+  .registration-table .age{align-self:end;min-height:65px;font-size:18px}
+  .registration-table .style-picker{min-width:0;max-width:none}
+  .registration-table .style-picker-trigger{min-height:44px}
+  .registration-table td:last-child{position:absolute;right:12px;top:10px}
+  .registration-table td:last-child::before{display:none}
+  .registration-table .remove{min-width:40px;min-height:40px}
+  .registration-table .division-cell:empty{display:none}
+  .participants{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .participants button{overflow-wrap:anywhere;min-width:0}
+
+  /* A normal document scroll on phones keeps every setting reachable. */
+  body.stickers-active{overflow:auto}
+  body.stickers-active #root{height:auto;min-height:100dvh;display:block}
+  body.stickers-active main{display:block;overflow:visible;padding:20px 12px}
+  .sticker-workspace{display:flex;flex-direction:column;gap:20px;min-height:0}
+  .sticker-workspace>.sticker-controls{overflow:visible;scrollbar-gutter:auto;flex:none}
+  .sticker-print-actions{position:static}
+  .sticker-preview-panel{overflow:visible;flex:none}
+  .sticker-previews{overflow:visible;flex:none;scrollbar-gutter:auto;padding:14px}
+  .sticker-preview-header{padding:16px}
+  .preview-size-control{flex-wrap:wrap}
+  .sticker-previews>.canvas{width:100%!important}
+}
