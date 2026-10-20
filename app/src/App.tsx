@@ -6,6 +6,13 @@ import PaperPreview from './PaperPreview'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
+import './Sidebar.css'
+
+const SIDEBAR_TABS = [
+  { id: 'participants', label: 'Participants' },
+  { id: 'judges', label: 'Judges' },
+  { id: 'battles', label: 'Battle settings' },
+] as const
 
 function load(): { event: BattleEvent; error: boolean } {
   try { const raw = localStorage.getItem(STORAGE_KEY); return { event: raw ? parseEvent(JSON.parse(raw)) : fresh(), error: false } }
@@ -35,6 +42,7 @@ function App() {
   const [initial] = useState(load)
   const [event, setEvent] = useState(initial.event)
   const [tab, setTab] = useState('registration')
+  const [sidebarTab, setSidebarTab] = useState<typeof SIDEBAR_TABS[number]['id']>('participants')
   const [categoryId, setCategoryId] = useState('')
   const [selected, setSelected] = useState('')
   const [message, setMessage] = useState(initial.error ? 'The saved event could not be read. It has not been overwritten. Import a backup or reload before editing.' : '')
@@ -215,17 +223,36 @@ function App() {
         <div className="toolbar"><div className="style-tabs">{groups.map(c => <button key={c.id} className={c.id === active?.id ? 'active' : ''} onClick={() => { setCategoryId(c.id); setSelected('') }}>{c.label} <small>{participants(event, c).length}</small></button>)}</div><div className="actions"><button disabled={!groups.some(c => participants(event, c).length)} onClick={() => print(true)}>Print all categories</button><button className="primary" disabled={!active || !participants(event, active).length} onClick={() => print(false)}>Print / Save PDF</button></div></div>
         {pending.length > 0 && <div className="warning">Some dancers are waiting for a birth year before they can be placed in Under / Over brackets. <button onClick={() => { setFilter('pending'); setTab('registration') }}>Review registration</button></div>}
         {!active || !layout ? <div className="panel empty">Define a dance style to create brackets.</div> : <div className="workspace">
-          <aside className="sidebar"><div className="eyebrow">YOUR LINEUP</div><h2>{active.label}</h2><p>Drag a name onto a slot to swap. Or click a name, then a slot.</p>
-            <div className="participants">{participants(event, active).map(p => <button key={p.id} draggable className={selected === p.id ? 'chosen' : ''} onDragStart={e => e.dataTransfer.setData('text/plain', p.id)} onClick={() => setSelected(selected === p.id ? '' : p.id)}><span>⠿</span>{name(p.id)}</button>)}</div>
-            <fieldset className="judge-editor"><legend>JUDGES</legend>
+          <aside className="sidebar"><div className="eyebrow">YOUR LINEUP</div><h2>{active.label}</h2>
+            {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: participants(event, active).map(p => p.id), rounds: rounds(participants(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
+            <div className="sidebar-tabs" role="tablist" aria-label="Bracket editor sections">
+              {SIDEBAR_TABS.map((item, i) => <button type="button" key={item.id} id={`sidebar-tab-${item.id}`} role="tab" aria-selected={sidebarTab === item.id} aria-controls={`sidebar-panel-${item.id}`} tabIndex={sidebarTab === item.id ? 0 : -1} onClick={() => { setSidebarTab(item.id); setSelected('') }} onKeyDown={e => {
+                let next = i
+                if (e.key === 'ArrowRight') next = (i + 1) % SIDEBAR_TABS.length
+                else if (e.key === 'ArrowLeft') next = (i + SIDEBAR_TABS.length - 1) % SIDEBAR_TABS.length
+                else if (e.key === 'Home') next = 0
+                else if (e.key === 'End') next = SIDEBAR_TABS.length - 1
+                else return
+                e.preventDefault(); setSidebarTab(SIDEBAR_TABS[next].id); setSelected('')
+                document.getElementById(`sidebar-tab-${SIDEBAR_TABS[next].id}`)?.focus()
+              }}>{item.label}</button>)}
+            </div>
+            <section className="sidebar-panel" key={`${active.id}-${sidebarTab}`} id={`sidebar-panel-${sidebarTab}`} role="tabpanel" aria-labelledby={`sidebar-tab-${sidebarTab}`} tabIndex={0}>
+            {sidebarTab === 'participants' && <>
+              <p>Drag a name onto a slot to swap. Or click a name, then a slot.</p>
+              <div className="participant-count">{participants(event, active).length} participants</div>
+              <div className="participants">{participants(event, active).map(p => <button key={p.id} draggable className={selected === p.id ? 'chosen' : ''} onDragStart={e => e.dataTransfer.setData('text/plain', p.id)} onClick={() => setSelected(selected === p.id ? '' : p.id)}><span>⠿</span>{name(p.id)}</button>)}</div>
+              {!participants(event, active).length && <p>No participants in this category yet.</p>}
+            </>}
+            {sidebarTab === 'judges' && <><p>Add one judge per box. Names appear above this category’s bracket.</p><fieldset className="judge-editor"><legend>JUDGES</legend>
               {layout.judges.map((judge, i) => <div className="judge-input" key={i}>
                 <input aria-label={`Judge ${i + 1}`} value={judge} placeholder={`Judge ${i + 1}`} onChange={e => saveLayout({ ...layout, judges: layout.judges.map((name, j) => j === i ? e.target.value : name) })} />
                 <button className="remove" aria-label={`Remove judge ${i + 1}`} onClick={() => saveLayout({ ...layout, judges: layout.judges.filter((_, j) => j !== i) })}>×</button>
               </div>)}
               <button className="add-judge" onClick={() => saveLayout({ ...layout, judges: [...layout.judges, ''] })}>+ Add judge</button>
-            </fieldset>
-            {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: participants(event, active).map(p => p.id), rounds: rounds(participants(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
-            <BattleStructure layout={layout} name={name} onChange={saveLayout} disabled={stale(event, active)} />
+            </fieldset></>}
+            {sidebarTab === 'battles' && <BattleStructure layout={layout} name={name} onChange={saveLayout} disabled={stale(event, active)} />}
+            </section>
           </aside>
           <section className="canvas"><div className="canvas-label"><span>PRINT PREVIEW / A4 LANDSCAPE</span><span>Winner boxes stay blank for handwriting</span></div>{layout.ids.length > 16 && <div className="warning">More than 16 dancers: names will print smaller on one A4 page. Multi-page brackets are planned.</div>}<PaperPreview>{paper(active)}</PaperPreview></section>
         </div>}

@@ -1,0 +1,15 @@
+.workspace{grid-template-columns:360px minmax(0,1fr)}
+.sidebar{min-width:0}
+.sidebar>h2{overflow-wrap:anywhere;margin-bottom:20px}
+.sidebar-tabs{display:grid;grid-template-columns:1fr .7fr 1.15fr;gap:3px;padding:4px;background:#eff2e9;border-radius:7px;margin-bottom:18px}
+.sidebar-tabs button{padding:10px 5px;border:1px solid transparent;border-radius:5px;background:transparent;font-size:11px;font-weight:600;line-height:1.3}
+.sidebar-tabs button[aria-selected="true"]{background:#fff;border-color:#dce2d2;color:#294635;box-shadow:0 1px 3px #29463512}
+.sidebar-panel{min-height:180px;max-height:min(60vh,600px);overflow-y:auto;overscroll-behavior-y:contain;scrollbar-gutter:stable;padding-right:7px}
+.sidebar-panel:focus-visible{outline:2px solid #d77848;outline-offset:3px}
+.sidebar-panel>p:first-child{margin-top:0}
+.participant-count{font-size:10px;font-weight:700;letter-spacing:1px;color:#7b886f;margin:14px 0 10px}
+.sidebar-panel .participants{margin:0;display:flex;flex-direction:column}
+.sidebar-panel .battle-editor{margin-top:0;border-top:0;padding-top:0}
+.sidebar-panel .judge-editor{padding-bottom:5px}
+@media(max-width:1100px){.workspace{grid-template-columns:330px minmax(0,1fr)}}
+@media(max-width:850px){.workspace{grid-template-columns:1fr}.sidebar-panel{max-height:45vh}.sidebar-tabs button{font-size:12px}}
