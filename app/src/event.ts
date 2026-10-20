@@ -2,7 +2,8 @@ import { rounds } from './bracket.ts'
 
 export type Person = { id: string; name: string; nickname: string; birth: string; styles: string[] }
 export type DanceStyle = { id: string; name: string; split: boolean; cutoff: number }
-export type Layout = { ids: string[]; rounds: number[][]; judges: string }
+export type Layout = { ids: string[]; rounds: number[][]; judges: string[] }
+type StoredLayout = Omit<Layout, 'judges'> & { judges: string | string[] }
 export type BattleEvent = { version: 2; title: string; year: number; people: Person[]; styles: DanceStyle[]; layouts: Record<string, Layout> }
 export type Category = { id: string; style: DanceStyle; division: 'all' | 'under' | 'over'; label: string }
 
@@ -38,7 +39,7 @@ export function pendingPeople(event: BattleEvent, style: DanceStyle): Person[] {
   return event.people.filter(p => named(p) && p.styles.includes(style.id) && division(p, style, event.year) === 'pending')
 }
 export function getLayout(event: BattleEvent, category: Category): Layout {
-  return event.layouts[category.id] || { ids: participants(event, category).map(p => p.id), rounds: rounds(participants(event, category).length), judges: '' }
+  return event.layouts[category.id] || { ids: participants(event, category).map(p => p.id), rounds: rounds(participants(event, category).length), judges: ['', '', ''] }
 }
 export function stale(event: BattleEvent, category: Category): boolean {
   const ids = participants(event, category).map(p => p.id), layout = getLayout(event, category)
@@ -46,10 +47,10 @@ export function stale(event: BattleEvent, category: Category): boolean {
 }
 
 function object(v: unknown): v is Record<string, unknown> { return Boolean(v) && typeof v === 'object' && !Array.isArray(v) }
-function validLayouts(value: unknown): value is Record<string, Layout> {
+function validLayouts(value: unknown): value is Record<string, StoredLayout> {
   if (!object(value)) return false
   return Object.values(value).every(l => {
-    if (!object(l) || typeof l.judges !== 'string' || !Array.isArray(l.ids) || l.ids.some(id => typeof id !== 'string') || new Set(l.ids).size !== l.ids.length || !Array.isArray(l.rounds)) return false
+    if (!object(l) || !(typeof l.judges === 'string' || Array.isArray(l.judges) && l.judges.every(j => typeof j === 'string')) || !Array.isArray(l.ids) || l.ids.some(id => typeof id !== 'string') || new Set(l.ids).size !== l.ids.length || !Array.isArray(l.rounds)) return false
     let n = l.ids.length
     for (const g of l.rounds) {
       if (!Array.isArray(g) || n < 2 || g.some(x => x !== 2 && x !== 3) || g.reduce((a, b) => a + b, 0) !== n) return false
@@ -57,6 +58,10 @@ function validLayouts(value: unknown): value is Record<string, Layout> {
     }
     return n <= 1
   })
+}
+
+function migrateLayout(layout: StoredLayout): Layout {
+  return { ...layout, judges: Array.isArray(layout.judges) ? [...layout.judges] : layout.judges.trim() ? layout.judges.split(/[,;\n]/).map(j => j.trim()).filter(Boolean) : ['', '', ''] }
 }
 
 // Read both versions so existing local events and exported backups retain their dancers and placements.
@@ -69,7 +74,7 @@ export function parseEvent(value: unknown): BattleEvent {
     if (value.version === 1 ? typeof p.styles !== 'string' : !Array.isArray(p.styles) || p.styles.some(id => typeof id !== 'string') || new Set(p.styles).size !== p.styles.length) throw Error('Invalid registrations')
   }
   if (value.version === 1) {
-    const legacy = value as unknown as { title: string; year: number; people: (Omit<Person, 'styles'> & { styles: string })[]; layouts: Record<string, Layout> }
+    const legacy = value as unknown as { title: string; year: number; people: (Omit<Person, 'styles'> & { styles: string })[]; layouts: Record<string, StoredLayout> }
     const styles = defaults()
     const styleFor = (name: string) => {
       let style = styles.find(s => normalize(s.name) === normalize(name))
@@ -81,7 +86,7 @@ export function parseEvent(value: unknown): BattleEvent {
     for (const [name, layout] of Object.entries(legacy.layouts)) {
       const id = `${styleFor(name).id}:all`
       // If legacy spelling variants collide, regenerate instead of dropping registrations.
-      if (!layouts[id]) layouts[id] = layout
+      if (!layouts[id]) layouts[id] = migrateLayout(layout)
       else delete layouts[id]
     }
     return { version: 2, title: legacy.title, year: legacy.year, people, styles, layouts }
@@ -93,5 +98,5 @@ export function parseEvent(value: unknown): BattleEvent {
     ids.add(s.id); names.add(normalize(s.name))
   }
   if (value.people.some(p => (p.styles as string[]).some(id => !ids.has(id)))) throw Error('Unknown style')
-  return value as unknown as BattleEvent
+  return { ...value, layouts: Object.fromEntries(Object.entries(value.layouts).map(([id, layout]) => [id, migrateLayout(layout)])) } as unknown as BattleEvent
 }

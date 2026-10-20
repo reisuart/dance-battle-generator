@@ -12,3 +12,13 @@
 .paper .judges{font-size:18px}
 .paper .judges b{font-size:12px}
 @media print{.paper .judges{font-size:13pt}.paper .judges b{font-size:10pt}}
+/* Judges use matching 12px type in the preview and on the printed page. */
+.judge-editor{border:0;margin:0;padding:0;min-width:0}
+.judge-editor legend{font-size:10px;font-weight:700;letter-spacing:1px;padding:0;margin-bottom:8px}
+.judge-input{display:flex;align-items:center;gap:5px;margin-bottom:8px}
+.judge-input input{flex:1;min-width:0}
+.add-judge{font-size:12px;margin-top:3px}
+.paper .judges{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-family:'Montserrat Variable',sans-serif;font-size:12px;font-weight:700;line-height:1.4}
+.paper .judges b{font-size:12px;font-weight:700;flex-shrink:0}
+.paper .judge-box{display:inline-block;border:1px solid #969d95;border-radius:3px;padding:5px 12px;min-width:72px;max-width:100%;text-align:center;font-size:12px;font-weight:700;overflow-wrap:anywhere}
+@media print{.paper .judges,.paper .judges b,.paper .judge-box{font-size:12px}}

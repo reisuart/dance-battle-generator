@@ -18,6 +18,8 @@ Existing version-1 saved events and event files migrate automatically to the sty
 
 The entire paper uses locally bundled Montserrat. Participant labels are larger and uppercase in preview and print; registration spelling is preserved. Long names fit inside their boxes. The Print button waits for the font to load.
 
+Each judge has an individual input in the bracket sidebar; add or remove inputs as needed. The paper shows `JUDGES` followed by one outlined box per judge, in uppercase Montserrat at a matching 12px size. Existing comma-separated judge names are automatically separated when loading saved events or importing backups.
+
 Use Export event to keep a backup; local saving belongs to the current browser and address. To print, choose Print / Save PDF, select A4 landscape, and disable browser headers and footers for a clean page.
 
 Validation: `npm run build` checks TypeScript and creates the production build. `node --experimental-strip-types bracket.test.mjs` checks bracket integrity for 0–256 entrants; `node --experimental-strip-types event.test.mjs` checks migration, style registration, division boundaries, missing ages, and import validation (Node 24 recommended).

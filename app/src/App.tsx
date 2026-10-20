@@ -116,7 +116,7 @@ function App() {
     const box = (r: number) => (r === 0 ? first : step) - 38
     const width = first + Math.max(0, columns.length - 1) * step - 28
     return <article className="paper" key={category.id}>
-      <div className="judges"><b>JUDGES</b><span>{l.judges || '________________________________________'}</span></div>
+      <div className="judges"><b>JUDGES</b>{l.judges.map((judge, i) => <span className="judge-box" key={i}>{judge.trim().toUpperCase() || '\u00a0'}</span>)}</div>
       <h2>{category.style.name.toUpperCase()} <span>BATTLE 1VS1</span></h2>
       {category.division !== 'all' && <div className="division-heading">{category.division === 'under' ? `UNDER ${category.style.cutoff}` : `OVER ${category.style.cutoff} · AGE ${category.style.cutoff}+`}</div>}
       {l.ids.length ? <svg viewBox={`0 0 ${Math.max(600, width)} ${height + 50}`} aria-label={`${category.label} bracket`}>
@@ -202,7 +202,13 @@ function App() {
         {!active || !layout ? <div className="panel empty">Define a dance style to create brackets.</div> : <div className="workspace">
           <aside className="sidebar"><div className="eyebrow">YOUR LINEUP</div><h2>{active.label}</h2><p>Drag a name onto a slot to swap. Or click a name, then a slot.</p>
             <div className="participants">{participants(event, active).map(p => <button key={p.id} draggable className={selected === p.id ? 'chosen' : ''} onDragStart={e => e.dataTransfer.setData('text/plain', p.id)} onClick={() => setSelected(selected === p.id ? '' : p.id)}><span>⠿</span>{name(p.id)}</button>)}</div>
-            <label>JUDGES<input value={layout.judges} placeholder="Judge 1, Judge 2, Judge 3" onChange={e => saveLayout({ ...layout, judges: e.target.value })} /></label>
+            <fieldset className="judge-editor"><legend>JUDGES</legend>
+              {layout.judges.map((judge, i) => <div className="judge-input" key={i}>
+                <input aria-label={`Judge ${i + 1}`} value={judge} placeholder={`Judge ${i + 1}`} onChange={e => saveLayout({ ...layout, judges: layout.judges.map((name, j) => j === i ? e.target.value : name) })} />
+                <button className="remove" aria-label={`Remove judge ${i + 1}`} onClick={() => saveLayout({ ...layout, judges: layout.judges.filter((_, j) => j !== i) })}>×</button>
+              </div>)}
+              <button className="add-judge" onClick={() => saveLayout({ ...layout, judges: [...layout.judges, ''] })}>+ Add judge</button>
+            </fieldset>
             {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: participants(event, active).map(p => p.id), rounds: rounds(participants(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
             <details><summary>Battle structure</summary><p>Three dancers battle together; one advances. Use arrows to move each battle.</p>
               {layout.rounds.map((battleGroups, r) => <div className="round-setting" key={r}><label>ROUND {r + 1}<select aria-label={`Three-person battles in round ${r + 1}`} value={battleGroups.filter(n => n === 3).length} onChange={e => {

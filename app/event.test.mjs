@@ -18,7 +18,7 @@ assert.deepEqual(event.people[0].styles, [hiphop.id, event.styles[3].id])
 assert.deepEqual(event.people[1].styles, [hiphop.id])
 const all = categories(event).find(c=>c.style.id===hiphop.id)
 assert.deepEqual(getLayout(event,all).ids, ['c','a','b'])
-assert.equal(getLayout(event,all).judges,'Judge A')
+assert.deepEqual(getLayout(event,all).judges,['Judge A'])
 assert.equal(stale(event,all),false)
 assert.deepEqual(parseEvent(JSON.parse(JSON.stringify(event))),event)
 hiphop.split=true
@@ -31,13 +31,13 @@ assert.equal(division(event.people[1],hiphop,2026),'over') // cutoff itself belo
 assert.equal(age(event.people[0],2026),17)
 assert.equal(age({...event.people[0],birth:'2027'},2026),null)
 assert.equal(age({...event.people[0],birth:'2008.5'},2026),null)
-event.layouts[divided[0].id]={ids:['a'],rounds:[],judges:'Under judge'}
-event.layouts[divided[1].id]={ids:['b'],rounds:[],judges:'Over judge'}
+event.layouts[divided[0].id]={ids:['a'],rounds:[],judges:['Under judge']}
+event.layouts[divided[1].id]={ids:['b'],rounds:[],judges:['Over judge']}
 assert.equal(stale(event,divided[0]),false)
 hiphop.cutoff=17
 assert.equal(stale(event,divided[0]),true)
 assert.equal(stale(event,divided[1]),true)
-assert.equal(getLayout(event,divided[1]).judges,'Over judge')
+assert.deepEqual(getLayout(event,divided[1]).judges,['Over judge'])
 hiphop.split=false
 assert.deepEqual(getLayout(event,categories(event).find(c=>c.style.id===hiphop.id)).ids,['c','a','b'])
 assert.throws(()=>parseEvent({...fresh(),styles:[...fresh().styles,{id:'duplicate',name:' hip hop ',split:false,cutoff:18}]}))
@@ -45,3 +45,10 @@ assert.throws(()=>parseEvent({...fresh(),people:[{id:'x',name:'X',nickname:'',bi
 assert.throws(()=>parseEvent({...fresh(),layouts:{bad:{ids:['a','b'],rounds:[[3]],judges:''}}}))
 assert.throws(()=>parseEvent({...fresh(),styles:[{...fresh().styles[0],cutoff:0}]}))
 console.log('Event tests passed: legacy migration, dropdown styles, exact cutoff, missing ages, independent divisions, changed cutoffs, and import validation.')
+const oldJudges = parseEvent({...fresh(), layouts: { old: { ids: [], rounds: [], judges: 'Nake, Alex, Max' } }})
+assert.deepEqual(oldJudges.layouts.old.judges,['Nake','Alex','Max'])
+assert.deepEqual(parseEvent(JSON.parse(JSON.stringify(oldJudges))).layouts.old.judges,['Nake','Alex','Max'])
+const individualJudges = parseEvent({...fresh(), layouts: { individual: { ids: [], rounds: [], judges: ['Nake', 'Alex, Jr.', ''] } }})
+assert.deepEqual(individualJudges.layouts.individual.judges,['Nake','Alex, Jr.',''])
+assert.throws(()=>parseEvent({...fresh(),layouts:{bad:{ids:[],rounds:[],judges:[42]}}}))
+console.log('Separate judge boxes and migration from comma-separated names passed.')
