@@ -4,6 +4,22 @@ import type { BattleEvent, Category } from './event.ts'
 export type Sticker = { personId: string; number: number; name: string }
 export type StickerSheet = { id: string; category: Category; page: number; labels: Sticker[] }
 
+export function stickerNameLines(text: string, measure: (value: string) => number, width: number): string[] {
+  if (measure(text) <= width) return [text]
+  const words = text.trim().split(/\s+/)
+  // Prefer whole words; a single long nickname can split between characters.
+  const parts = words.length > 1 ? words : Array.from(text)
+  const separator = words.length > 1 ? ' ' : ''
+  if (parts.length < 2) return [text]
+  let best = [text], bestWidth = Infinity
+  for (let i = 1; i < parts.length; i++) {
+    const lines = [parts.slice(0, i).join(separator), parts.slice(i).join(separator)]
+    const longest = Math.max(...lines.map(measure))
+    if (longest < bestWidth) { best = lines; bestWidth = longest }
+  }
+  return best
+}
+
 export function stickerSheets(event: BattleEvent, start = 1, displayName: 'nickname' | 'name' = 'nickname'): StickerSheet[] {
   if (!Number.isInteger(start) || start < 1 || start > 9999) throw Error('Starting number must be between 1 and 9999')
   return categories(event).flatMap(category => {

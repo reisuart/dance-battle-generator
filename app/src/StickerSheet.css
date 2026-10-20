@@ -8,3 +8,4 @@
 .sticker-guides::before{left:50%;top:0;height:100%;border-left:1px dashed #ccd2c8}
 .sticker-guides::after{top:50%;left:0;width:100%;border-top:1px dashed #ccd2c8}
 @media print{.sticker-sheet{break-inside:avoid;break-after:page;page-break-inside:avoid;page-break-after:always;box-shadow:none}.sticker-sheet:last-child{break-after:auto;page-break-after:auto}.sticker-guides::before,.sticker-guides::after{display:none}}
+.sticker-name{line-height:1.1}

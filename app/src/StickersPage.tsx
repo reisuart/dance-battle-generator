@@ -1,9 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { Printer } from 'lucide-react'
 import { categories, pendingPeople } from './event'
 import type { BattleEvent } from './event'
-import { stickerSheets } from './stickers'
+import { stickerNameLines, stickerSheets } from './stickers'
 import { printStickers } from './printStickers'
 import type { StickerSheet } from './stickers'
 import PaperPreview from './PaperPreview'
@@ -14,21 +14,23 @@ import './Stickers.css'
 
 // A label is exactly 105mm wide with 7mm padding on either side.
 const TEXT_WIDTH = 91 * 96 / 25.4
-function StickerText({ text, size, className }: { text: string; size: number; className: string }) {
-  const ref = useRef<HTMLSpanElement>(null)
+function StickerText({ text, size, className, twoLines = false }: { text: string; size: number; className: string; twoLines?: boolean }) {
+  const [fit, setFit] = useState({ text, lines: [text], fontSize: size })
   useEffect(() => {
     let cancelled = false
     void document.fonts.load(`400 ${size}px "Archivo Black"`, text).then(() => {
-      if (cancelled || !ref.current) return
+      if (cancelled) return
       const context = document.createElement('canvas').getContext('2d')
       if (!context) return
       context.font = `400 ${size}px "Archivo Black"`
-      const width = context.measureText(text).width
-      ref.current.style.fontSize = `${width > TEXT_WIDTH ? size * TEXT_WIDTH / width : size}px`
+      const measure = (value: string) => context.measureText(value).width
+      const lines = twoLines ? stickerNameLines(text, measure, TEXT_WIDTH) : [text]
+      const width = Math.max(...lines.map(measure))
+      setFit({ text, lines, fontSize: width > TEXT_WIDTH ? size * TEXT_WIDTH / width : size })
     }).catch(() => { /* The print action reports font loading failures. */ })
     return () => { cancelled = true }
-  }, [text, size])
-  return <span ref={ref} className={`sticker-text ${className}`} style={{ fontSize: size }}>{text}</span>
+  }, [text, size, twoLines])
+  return <span className={`sticker-text ${className}`} style={{ fontSize: fit.text === text ? fit.fontSize : size }}>{(fit.text === text ? fit.lines : [text]).map((line, i) => <Fragment key={i}>{i > 0 && <br />}{line}</Fragment>)}</span>
 }
 
 function Sheet({ sheet, guides = false }: { sheet: StickerSheet; guides?: boolean }) {
@@ -38,7 +40,7 @@ function Sheet({ sheet, guides = false }: { sheet: StickerSheet; guides?: boolea
     {Array.from({ length: 4 }, (_, i) => {
       const label = sheet.labels[i]
       return <section key={i} className="sticker-label" aria-label={label ? `Number ${label.number}, ${label.name}` : 'Unused sticker'}>
-        {label && <><div className="sticker-heading"><StickerText text={heading} size={50} className="sticker-style" /></div><div className="sticker-number-wrap"><StickerText text={String(label.number)} size={90 * 96 / 25.4} className="sticker-number" /></div><StickerText text={label.name} size={50} className="sticker-name" /></>}
+        {label && <><div className="sticker-heading"><StickerText text={heading} size={50} className="sticker-style" /></div><div className="sticker-number-wrap"><StickerText text={String(label.number)} size={90 * 96 / 25.4} className="sticker-number" /></div><StickerText text={label.name} size={50} className="sticker-name" twoLines /></>}
       </section>
     })}
   </article>
