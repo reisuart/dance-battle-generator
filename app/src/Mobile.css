@@ -1,4 +1,5 @@
 .mobile-registration-sort{display:none}
+.mobile-bracket-category{display:none}
 
 @media screen and (max-width:850px){
   .app-header.page-header{padding:8px}
@@ -13,7 +14,10 @@
   .canvas-label{flex-wrap:wrap;line-height:1.5;margin-bottom:12px}
   .toolbar{min-width:0}
   .toolbar>.actions{width:100%;flex-wrap:wrap}
-  .style-tabs{flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding-bottom:8px}
+  .toolbar>.style-tabs{display:none}
+  .mobile-bracket-category{display:block;width:100%}
+  .mobile-bracket-category .style-picker{min-width:0;max-width:none;width:100%}
+  .mobile-bracket-category .style-picker-trigger{min-height:44px}
   .style-tabs button{flex-shrink:0}
   .panel-head{padding:18px}
   .panel-bottom{padding:18px;flex-wrap:wrap;gap:12px}
