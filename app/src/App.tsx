@@ -16,19 +16,19 @@ function BracketName({ text, x, y, width }: { text: string; x: number; y: number
   const ref = useRef<SVGTextElement>(null)
   useEffect(() => {
     let cancelled = false
-    void document.fonts.load('700 32px "Montserrat Variable"', text).then(() => {
+    void document.fonts.load('700 18px "Montserrat Variable"', text).then(() => {
       const node = ref.current
       if (!node || cancelled) return
       // Canvas also measures the hidden print copy, whose SVG has no screen dimensions.
       const context = document.createElement('canvas').getContext('2d')
       if (!context) return
-      context.font = '700 32px "Montserrat Variable"'
+      context.font = '700 18px "Montserrat Variable"'
       const measuredWidth = context.measureText(text).width
-      node.setAttribute('font-size', String(measuredWidth > width ? 32 * width / measuredWidth : 32))
+      node.setAttribute('font-size', String(measuredWidth > width ? 18 * width / measuredWidth : 18))
     }).catch(() => { /* The Print button reports a font-loading failure. */ })
     return () => { cancelled = true }
   }, [text, width])
-  return <text ref={ref} className="printed-name" x={x} y={y} dominantBaseline="central" fontWeight="700" fontSize="32">{text}</text>
+  return <text ref={ref} className="printed-name" x={x} y={y} dominantBaseline="central" fontWeight="700" fontSize="18">{text}</text>
 }
 
 function App() {
@@ -101,7 +101,7 @@ function App() {
     if (pending.some(p => every || affectedStyles.has(p.style.id))) { setMessage('Add valid birth years for dancers awaiting age divisions before printing this style.'); return }
     if (targets.some(c => stale(event, c))) { setMessage('Registration or age divisions changed. Update the affected brackets before printing.'); return }
     try {
-      await Promise.all([document.fonts.load('400 16px "Montserrat Variable"'), document.fonts.load('700 32px "Montserrat Variable"')])
+      await Promise.all([document.fonts.load('400 16px "Montserrat Variable"'), document.fonts.load('700 18px "Montserrat Variable"')])
       await document.fonts.ready
       setAll(every); setTimeout(() => window.print(), 100)
     } catch { setMessage('The print font could not load. Refresh the page and try printing again.') }
