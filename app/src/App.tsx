@@ -106,8 +106,13 @@ function App() {
   }
 
   function paper(category: Category) {
-    const l = getLayout(event, category), height = Math.max(480, l.ids.length * 60)
-    const columns: { text: string; y: number; id?: string }[][] = [l.ids.map((id, i) => ({ text: name(id).toUpperCase(), y: (i + .5) * height / l.ids.length, id }))]
+    const l = getLayout(event, category), height = Math.max(480, l.ids.length * 60) + 50
+    const boxHeight = 48, verticalEdge = 1
+    const columns: { text: string; y: number; id?: string }[][] = [l.ids.map((id, i) => ({
+      text: name(id).toUpperCase(),
+      y: l.ids.length === 1 ? (height - boxHeight) / 2 : verticalEdge + i * (height - boxHeight - verticalEdge * 2) / (l.ids.length - 1),
+      id,
+    }))]
     l.rounds.forEach((g, r) => {
       let offset = 0
       columns.push(g.map(n => { const inputs = columns[r].slice(offset, offset + n); offset += n; return { text: '', y: inputs.reduce((a, p) => a + p.y, 0) / n } }))
@@ -119,7 +124,7 @@ function App() {
       <div className="judges"><b>JUDGES</b>{l.judges.map((judge, i) => <span className="judge-box" key={i}>{judge.trim().toUpperCase() || '\u00a0'}</span>)}</div>
       <h2>{category.style.name.toUpperCase()} <span>BATTLE 1VS1</span></h2>
       {category.division !== 'all' && <div className="division-heading">{category.division === 'under' ? `UNDER ${category.style.cutoff}` : `OVER ${category.style.cutoff} · AGE ${category.style.cutoff}+`}</div>}
-      {l.ids.length ? <svg viewBox={`0 0 ${width} ${height + 50}`} aria-label={`${category.label} bracket`}>
+      {l.ids.length ? <svg viewBox={`0 0 ${width} ${height}`} aria-label={`${category.label} bracket`}>
         {l.rounds.flatMap((g, r) => {
           let offset = 0
           return g.flatMap((n, b) => {
