@@ -31,12 +31,12 @@ function StickerText({ text, size, className }: { text: string; size: number; cl
 
 function Sheet({ sheet, guides = false }: { sheet: StickerSheet; guides?: boolean }) {
   const { category } = sheet
-  const division = category.division === 'under' ? `UNDER ${category.style.cutoff}` : category.division === 'over' ? `OVER ${category.style.cutoff} (${category.style.cutoff}+)` : ''
+  const heading = `${category.style.name}${category.division === 'all' ? '' : category.division === 'under' ? ' Under' : ' Over'}`.toUpperCase()
   return <article className={`sticker-sheet${guides ? ' sticker-guides' : ''}`} aria-label={`${category.label}, sticker sheet ${sheet.page}`}>
     {Array.from({ length: 4 }, (_, i) => {
       const label = sheet.labels[i]
       return <section key={i} className="sticker-label" aria-label={label ? `Number ${label.number}, ${label.name}` : 'Unused sticker'}>
-        {label && <><div className="sticker-heading"><StickerText text={category.style.name.toUpperCase()} size={24} className="sticker-style" />{division && <StickerText text={division} size={18} className="sticker-division" />}</div><div className="sticker-number-wrap"><StickerText text={String(label.number)} size={90 * 96 / 25.4} className="sticker-number" /></div><StickerText text={label.name} size={24} className="sticker-name" /></>}
+        {label && <><div className="sticker-heading"><StickerText text={heading} size={50} className="sticker-style" /></div><div className="sticker-number-wrap"><StickerText text={String(label.number)} size={90 * 96 / 25.4} className="sticker-number" /></div><StickerText text={label.name} size={50} className="sticker-name" /></>}
       </section>
     })}
   </article>
@@ -68,7 +68,7 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
     setError(''); setPrintAll(all)
     try {
       const characters = target.map(s => `${s.category.label} ${s.labels.map(l => `${l.number} ${l.name}`).join(' ')}`).join(' ')
-      await document.fonts.load('400 24px "Archivo Black"', characters)
+      await document.fonts.load('400 50px "Archivo Black"', characters)
       await document.fonts.ready
       setTimeout(() => window.print(), 100)
     } catch { setError('Archivo Black could not load. Refresh the page before printing.') }
