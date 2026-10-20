@@ -17,16 +17,16 @@ function BracketName({ text, x, y, width }: { text: string; x: number; y: number
     void document.fonts.load('700 32px "Montserrat Variable"', text).then(() => {
       const node = ref.current
       if (!node || cancelled) return
-      node.removeAttribute('textLength')
       // Canvas also measures the hidden print copy, whose SVG has no screen dimensions.
       const context = document.createElement('canvas').getContext('2d')
       if (!context) return
       context.font = '700 32px "Montserrat Variable"'
-      if (context.measureText(text).width > width) node.setAttribute('textLength', String(width))
+      const measuredWidth = context.measureText(text).width
+      node.setAttribute('font-size', String(measuredWidth > width ? 32 * width / measuredWidth : 32))
     }).catch(() => { /* The Print button reports a font-loading failure. */ })
     return () => { cancelled = true }
   }, [text, width])
-  return <text ref={ref} className="printed-name" x={x} y={y} fontWeight="700" fontSize="32" lengthAdjust="spacingAndGlyphs">{text}</text>
+  return <text ref={ref} className="printed-name" x={x} y={y} dominantBaseline="central" fontWeight="700" fontSize="32">{text}</text>
 }
 
 function App() {
@@ -112,28 +112,28 @@ function App() {
       let offset = 0
       columns.push(g.map(n => { const inputs = columns[r].slice(offset, offset + n); offset += n; return { text: '', y: inputs.reduce((a, p) => a + p.y, 0) / n } }))
     })
-    const step = 220, first = 340, x = (r: number) => r === 0 ? 0 : first + (r - 1) * step
-    const box = (r: number) => (r === 0 ? first : step) - 38
-    const width = first + Math.max(0, columns.length - 1) * step - 28
+    const width = 1000, gap = 32, edge = 1
+    const boxWidth = (width - edge * 2 - gap * (columns.length - 1)) / columns.length
+    const x = (r: number) => edge + r * (boxWidth + gap)
     return <article className="paper" key={category.id}>
       <div className="judges"><b>JUDGES</b>{l.judges.map((judge, i) => <span className="judge-box" key={i}>{judge.trim().toUpperCase() || '\u00a0'}</span>)}</div>
       <h2>{category.style.name.toUpperCase()} <span>BATTLE 1VS1</span></h2>
       {category.division !== 'all' && <div className="division-heading">{category.division === 'under' ? `UNDER ${category.style.cutoff}` : `OVER ${category.style.cutoff} · AGE ${category.style.cutoff}+`}</div>}
-      {l.ids.length ? <svg viewBox={`0 0 ${Math.max(600, width)} ${height + 50}`} aria-label={`${category.label} bracket`}>
+      {l.ids.length ? <svg viewBox={`0 0 ${width} ${height + 50}`} aria-label={`${category.label} bracket`}>
         {l.rounds.flatMap((g, r) => {
           let offset = 0
           return g.flatMap((n, b) => {
             const inputs = columns[r].slice(offset, offset + n); offset += n
-            return inputs.map((p, k) => <path key={`${r}-${b}-${k}`} d={`M ${x(r) + box(r)} ${p.y + 24} H ${x(r) + box(r) + 16} V ${columns[r + 1][b].y + 24} H ${x(r + 1)}`} fill="none" stroke="#a0a5a0" strokeWidth="1.5" />)
+            return inputs.map((p, k) => <path key={`${r}-${b}-${k}`} d={`M ${x(r) + boxWidth} ${p.y + 24} H ${x(r) + boxWidth + gap / 2} V ${columns[r + 1][b].y + 24} H ${x(r + 1)}`} fill="none" stroke="#a0a5a0" strokeWidth="1.5" />)
           })
         })}
         {columns.flatMap((col, r) => col.map((p, i) => <g key={`${r}-${i}`}>
-          <rect x={x(r)} y={p.y} width={box(r)} height="48" rx="4" fill="white" stroke={r === 0 && selected === p.id ? '#d97947' : '#969d95'} strokeWidth="1.5" />
+          <rect x={x(r)} y={p.y} width={boxWidth} height="48" rx="4" fill="white" stroke={r === 0 && selected === p.id ? '#d97947' : '#969d95'} strokeWidth="1.5" />
           {r === 0 && <>
-            <foreignObject className="interactive-slot" x={x(r) + 4} y={p.y + 2} width={box(r) - 8} height="44">
+            <foreignObject className="interactive-slot" x={x(r) + 4} y={p.y + 2} width={boxWidth - 8} height="44">
               <button className="slot" title={p.text} aria-label={p.text} draggable onDragStart={e => e.dataTransfer.setData('text/plain', p.id!)} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (category.id === active?.id) swap(e.dataTransfer.getData('text/plain'), i) }} onClick={() => category.id === active?.id && (selected ? swap(selected, i) : setSelected(p.id!))} />
             </foreignObject>
-            <BracketName text={p.text} x={x(r) + 9} y={p.y + 35} width={box(r) - 18} />
+            <BracketName text={p.text} x={x(r) + 9} y={p.y + 24} width={boxWidth - 18} />
           </>}
         </g>))}
       </svg> : <div className="empty">No dancers in this category yet.</div>}
