@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
+import PaperPreview from './PaperPreview'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
@@ -218,7 +219,7 @@ function App() {
             {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: participants(event, active).map(p => p.id), rounds: rounds(participants(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
             <BattleStructure layout={layout} name={name} onChange={saveLayout} disabled={stale(event, active)} />
           </aside>
-          <section className="canvas"><div className="canvas-label"><span>PRINT PREVIEW / A4 LANDSCAPE</span><span>Winner boxes stay blank for handwriting</span></div>{layout.ids.length > 16 && <div className="warning">More than 16 dancers: names will print smaller on one A4 page. Multi-page brackets are planned.</div>}{paper(active)}</section>
+          <section className="canvas"><div className="canvas-label"><span>PRINT PREVIEW / A4 LANDSCAPE</span><span>Winner boxes stay blank for handwriting</span></div>{layout.ids.length > 16 && <div className="warning">More than 16 dancers: names will print smaller on one A4 page. Multi-page brackets are planned.</div>}<PaperPreview>{paper(active)}</PaperPreview></section>
         </div>}
       </>}
       <div className="app-foot">MADE FOR THE CYPHER.<span>Export your event before clearing browser data.</span></div>
