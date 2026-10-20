@@ -3,6 +3,7 @@ import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
 import PaperPreview from './PaperPreview'
+import StylePicker from './StylePicker'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
@@ -212,7 +213,7 @@ function App() {
             return <tr key={p.id}><td>{String(i + 1).padStart(2, '0')}</td>
               {(['name', 'nickname', 'birth'] as const).map(field => <td key={field}><input aria-label={`${field} for dancer ${i + 1}`} type={field === 'birth' ? 'number' : 'text'} min={field === 'birth' ? 1900 : undefined} max={field === 'birth' ? event.year : undefined} value={p[field]} placeholder={field === 'birth' ? '2000' : field === 'name' ? 'Dancer name' : 'Stage name'} onChange={e => update(p.id, field, e.target.value)} /></td>)}
               <td className="age">{age(p, event.year) ?? '—'}</td>
-              <td><details className="style-picker"><summary aria-label={`Styles for dancer ${i + 1}`}>{p.styles.length ? event.styles.filter(s => p.styles.includes(s.id)).map(s => s.name).join(', ') : 'Select styles'}</summary><div className="style-options">{event.styles.map(s => <label key={s.id}><input type="checkbox" checked={p.styles.includes(s.id)} onChange={e => update(p.id, 'styles', e.target.checked ? [...p.styles, s.id] : p.styles.filter(id => id !== s.id))} />{s.name}</label>)}{!event.styles.length && <button onClick={() => setTab('styles')}>Add styles first</button>}</div></details></td>
+              <td><StylePicker styles={event.styles} selected={p.styles} label={`Styles for dancer ${i + 1}`} onChange={ids => update(p.id, 'styles', ids)} onManage={() => setTab('styles')} /></td>
               {hasDivisions && <td className="division-cell">{event.styles.filter(s => s.split && p.styles.includes(s.id)).map(s => <span className={division(p, s, event.year) === 'pending' ? 'division-badge pending' : 'division-badge'} key={s.id}>{s.name} · {division(p, s, event.year) === 'pending' ? 'Birth year needed' : division(p, s, event.year) === 'under' ? `Under ${s.cutoff}` : `Over ${s.cutoff} (${s.cutoff}+)`}</span>)}</td>}
               <td><button className="remove" aria-label={`Remove dancer ${i + 1}`} onClick={() => { if (confirm(`Remove ${p.nickname || p.name || 'this dancer'}?`)) setEvent({ ...event, people: event.people.filter(d => d.id !== p.id) }) }}>×</button></td>
             </tr>
