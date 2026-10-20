@@ -22,3 +22,33 @@
 .paper .judges b{font-size:12px;font-weight:700;flex-shrink:0}
 .paper .judge-box{display:inline-block;border:1px solid #969d95;border-radius:3px;padding:0px 5px;max-width:100%;text-align:center;font-size:12px;font-weight:700;overflow-wrap:anywhere}
 @media print{.paper .judges,.paper .judges b,.paper .judge-box{font-size:12px}}
+/* Round cards explain the draw and only expose meaningful arrangements. */
+.sidebar details.battle-editor{max-height:none;overflow:visible}
+.sidebar .battle-editor summary{font-size:14px}
+.sidebar .battle-help{font-size:12px;margin:12px 0 18px;line-height:1.55}
+.battle-controls,.battle-format{border:0;padding:0;margin:0;min-width:0}
+.battle-controls:disabled{opacity:.55}
+.battle-round{margin:20px 0 0;padding-top:20px;border-top:1px solid #e5e9df}
+.battle-round>header{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.round-number{width:28px;height:28px;display:grid;place-items:center;flex-shrink:0;border-radius:50%;background:#e9efe3;color:#36513a;font-size:12px;font-weight:700}
+.battle-round h3{font-size:14px;margin:0 0 4px}
+.sidebar .battle-round header p{font-size:11px;line-height:1.4;margin:0;color:#6d7866}
+.battle-format legend{font-size:9px;letter-spacing:1px;font-weight:700;margin-bottom:8px;color:#68765f}
+.format-option{display:flex;align-items:center;gap:8px;letter-spacing:0;font-size:12px;font-weight:400;line-height:1.45;padding:9px;border:1px solid #dde3d5;border-radius:6px;margin:6px 0;cursor:pointer;background:#fafbf7}
+.format-option:has(input:checked){background:#edf3e7;border-color:#8ba37b}
+.format-option input{width:14px;height:14px;margin:0;flex-shrink:0;accent-color:#36513a}
+.format-hint{display:block;font-size:10px;line-height:1.5;color:#85907c;margin:7px 0 12px}
+.sidebar .fixed-format{font-size:11px;background:#f4f6ef;padding:8px 10px;border-radius:5px;margin:0 0 10px;color:#586b4f}
+.battle-cards,.battle-dancers{list-style:none;margin:0;padding:0}
+.battle-card{border:1px solid #e0e5d8;border-radius:6px;padding:10px;margin:8px 0;background:#fff}
+.battle-card.three-person{border-color:#debf95;background:#fff9f0}
+.battle-card-heading{display:flex;align-items:center;justify-content:space-between;gap:6px;font-size:11px;margin-bottom:8px}
+.battle-card-heading>span{font-size:9px;border-radius:4px;background:#edf1e7;color:#526446;padding:3px 5px;white-space:nowrap}
+.three-person .battle-card-heading>span{background:#f8e4c7;color:#946022}
+.battle-dancers{display:flex;flex-direction:column;gap:4px}
+.battle-dancers li{font-size:11px;line-height:1.4;color:#4c5844;overflow-wrap:anywhere}
+.sidebar .battle-sources{font-size:11px;line-height:1.5;margin:0;color:#76826b}
+.battle-move{display:flex;align-items:center;gap:4px;padding-top:9px;margin-top:9px;border-top:1px solid #ebdbc3}
+.battle-move>span{font-size:10px;flex:1;color:#916e43}
+.battle-move button{font-size:10px;padding:5px 7px}
+.sidebar .round-guidance{font-size:10px;line-height:1.5;color:#85907c;margin:10px 0 0}

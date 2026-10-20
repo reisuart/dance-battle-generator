@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import './fonts/montserrat/index.css'
-import { choices, rounds } from './bracket'
+import { rounds } from './bracket'
+import BattleStructure from './BattleStructure'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
@@ -215,17 +216,7 @@ function App() {
               <button className="add-judge" onClick={() => saveLayout({ ...layout, judges: [...layout.judges, ''] })}>+ Add judge</button>
             </fieldset>
             {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: participants(event, active).map(p => p.id), rounds: rounds(participants(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
-            <details><summary>Battle structure</summary><p>Three dancers battle together; one advances. Use arrows to move each battle.</p>
-              {layout.rounds.map((battleGroups, r) => <div className="round-setting" key={r}><label>ROUND {r + 1}<select aria-label={`Three-person battles in round ${r + 1}`} value={battleGroups.filter(n => n === 3).length} onChange={e => {
-                const n = battleGroups.reduce((a, b) => a + b, 0), b = Number(e.target.value), g: number[] = [...Array((n - 3 * b) / 2).fill(2), ...Array(b).fill(3)]
-                saveLayout({ ...layout, rounds: [...layout.rounds.slice(0, r), g, ...rounds(g.length)] })
-              }}>{choices(battleGroups.reduce((a, b) => a + b, 0)).map(b => <option key={b} value={b}>{b} three-person {b === 1 ? 'battle' : 'battles'}</option>)}</select></label>
-                {battleGroups.map((n, b) => <div className="group-setting" key={b}><span>Battle {b + 1} · {n} dancers</span>{[-1, 1].map(dir => <button key={dir} aria-label={`Move round ${r + 1} battle ${b + 1} ${dir < 0 ? 'up' : 'down'}`} disabled={b + dir < 0 || b + dir >= battleGroups.length} onClick={() => {
-                  const g = [...battleGroups]; [g[b], g[b + dir]] = [g[b + dir], g[b]]
-                  saveLayout({ ...layout, rounds: layout.rounds.map((x, i) => i === r ? g : x) })
-                }}>{dir < 0 ? '↑' : '↓'}</button>)}</div>)}
-              </div>)}
-            </details>
+            <BattleStructure layout={layout} name={name} onChange={saveLayout} disabled={stale(event, active)} />
           </aside>
           <section className="canvas"><div className="canvas-label"><span>PRINT PREVIEW / A4 LANDSCAPE</span><span>Winner boxes stay blank for handwriting</span></div>{layout.ids.length > 16 && <div className="warning">More than 16 dancers: names will print smaller on one A4 page. Multi-page brackets are planned.</div>}{paper(active)}</section>
         </div>}

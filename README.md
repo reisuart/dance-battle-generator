@@ -10,7 +10,7 @@ A first local version is implemented in `app/`: registration, age calculation, s
 
 From `app/`, run `npm install` once, then `npm run dev`. Open the exact Local URL printed in the terminal; Vite may choose a different port if another app is running.
 
-Use Styles & divisions to define styles (Hip Hop, Modern, and Contemporary are provided). In Registration, use each dancer's dropdown to select one or more styles. In Brackets & print, select a category, drag a name onto another slot to swap, and expand Battle structure to move three-person battles or change their count in each round. Winner slots intentionally remain blank for handwriting.
+Use Styles & divisions to define styles (Hip Hop, Modern, and Contemporary are provided). In Registration, use each dancer's dropdown to select one or more styles. In Brackets & print, select a category, drag a name onto another slot to swap, and use Arrange battles to see round summaries, choose between valid battle formats, and reposition highlighted three-person battles. Winner slots intentionally remain blank for handwriting.
 
 Optionally enable Under / Over for any style and set its age cutoff. Under means strictly below that age; Over includes the cutoff age and above. Categories appear in registration filters and as separate brackets. Missing or invalid birth years are flagged and block printing the affected style until corrected. Other styles can remain undivided. Event year controls ages, but neither event name nor year prints on the bracket; the page contains judges, style/division heading, and larger participant names.
 
