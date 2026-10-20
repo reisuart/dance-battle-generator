@@ -12,3 +12,7 @@
 .style-picker-trigger>.lucide{opacity:.65;transition:transform .15s}
 .style-picker-trigger[aria-expanded="true"]>.lucide{transform:rotate(180deg)}
 button.style-picker-trigger{justify-content:space-between}
+button.select-overlay-option,button.select-overlay-option:has(>.lucide){display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:10px 8px;border:0;background:transparent;color:inherit;text-align:left;line-height:1.4;font-size:13px}
+button.select-overlay-option[aria-checked="true"]{background:#81986e25;color:var(--accent,#36513a)}
+button.select-overlay-option:hover{background:#81986e20}
+.select-overlay-option>span{overflow-wrap:anywhere}

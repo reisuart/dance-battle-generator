@@ -4,7 +4,7 @@ import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
 import PaperPreview from './PaperPreview'
-import StylePicker from './StylePicker'
+import StylePicker, { SelectOverlay } from './StylePicker'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
@@ -205,7 +205,7 @@ function App() {
       </section>}
       {tab === 'registration' && <section className="panel">
         <div className="panel-head"><div><h2>The registration desk</h2><p>Select one or more styles from each dancer’s dropdown.</p></div><div className="actions"><button onClick={() => setTab('styles')}>Manage styles</button><button className="primary" onClick={() => { setFilter('all'); setEvent({ ...event, people: [...event.people, { id: crypto.randomUUID(), name: '', nickname: '', birth: '', styles: [] }] }) }}><Plus size={16} aria-hidden="true" /> Add dancer</button></div></div>
-        <div className="registration-filter"><label>SHOW REGISTRATIONS<select value={filter} onChange={e => setFilter(e.target.value)}><option value="all">All dancers</option>{groups.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}{hasDivisions && <option value="pending">Birth year needed for division</option>}</select></label><span>{visiblePeople.length} dancers shown</span></div>
+        <div className="registration-filter"><div className="registration-filter-control"><span className="control-label">SHOW REGISTRATIONS</span><SelectOverlay label="Show registrations" options={[{ id: 'all', name: 'All dancers' }, ...groups.map(c => ({ id: c.id, name: c.label })), ...(pending.length || filter === 'pending' ? [{ id: 'pending', name: 'Missing or invalid birth year' }] : [])]} selected={[filter]} onChange={ids => setFilter(ids[0])} /></div><span>{visiblePeople.length} dancers shown</span></div>
         {pending.length > 0 && <div className="warning registration-warning">{new Set(pending.map(p => p.person.id)).size} dancers need a valid birth year to join age-divided brackets. <button onClick={() => setFilter('pending')}>Show dancers</button></div>}
         {ageSort !== 'none' && <div className="registration-sort-status"><span role="status">{ageSort === 'ascending' ? 'Youngest first' : 'Oldest first'} · Missing birth years last</span><button onClick={() => setAgeSort('none')}>Reset order</button></div>}
         <div className="table-wrap"><table><thead><tr><th>#</th><th>Full name</th><th>Nickname</th><th>Birth year</th><th aria-sort={ageSort}><button className="age-sort" title={ageSort === 'ascending' ? 'Sort oldest first' : 'Sort youngest first'} onClick={() => setAgeSort(ageSort === 'ascending' ? 'descending' : 'ascending')}>Age {ageSort === 'ascending' ? <ArrowUp size={14} aria-hidden="true" /> : ageSort === 'descending' ? <ArrowDown size={14} aria-hidden="true" /> : <ArrowUpDown size={14} aria-hidden="true" />}</button></th><th>Styles</th>{hasDivisions && <th>Age divisions</th>}<th /></tr></thead><tbody>

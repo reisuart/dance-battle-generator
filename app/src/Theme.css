@@ -87,3 +87,7 @@ th .age-sort,th .age-sort:hover{display:inline-flex;align-items:center;gap:6px;b
 button:not(.style-picker-trigger):has(>.lucide),.button:has(>.lucide){display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .lucide{flex-shrink:0}
 .participant-grip{color:var(--muted,#99a58e)}
+.registration-filter-control{width:300px;max-width:100%}
+.registration-filter-control>.control-label{display:block;margin-bottom:7px;padding:0;font-size:10px;font-weight:700;letter-spacing:1px;color:inherit}
+.registration-filter-control .style-picker{max-width:none;min-width:0}
+.registration-filter .style-picker-trigger>span{padding:0;font-size:inherit;color:inherit}
