@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown, Download, GripVertical, PencilLine, Plus, Settings, Sticker, Trophy, Upload, X } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown, Download, GripVertical, PencilLine, Plus, Settings, SquareBottomDashedScissors, Trophy, Upload, X } from 'lucide-react'
 import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
@@ -17,6 +17,14 @@ const SIDEBAR_TABS = [
   { id: 'judges', label: 'Judges' },
   { id: 'battles', label: 'Battle settings' },
 ] as const
+
+const PAGE_KEY = 'dance-battle-last-page'
+function loadPage(): string {
+  try {
+    const page = localStorage.getItem(PAGE_KEY)
+    return page && ['registration', 'brackets', 'stickers', 'settings'].includes(page) ? page : 'registration'
+  } catch { return 'registration' }
+}
 
 function load(): { event: BattleEvent; error: boolean } {
   try { const raw = localStorage.getItem(STORAGE_KEY); return { event: raw ? parseEvent(JSON.parse(raw)) : fresh(), error: false } }
@@ -45,7 +53,7 @@ function BracketName({ text, x, y, width }: { text: string; x: number; y: number
 function App() {
   const [initial] = useState(load)
   const [event, setEvent] = useState(initial.event)
-  const [tab, setTab] = useState('registration')
+  const [tab, setTab] = useState(loadPage)
   const [sidebarTab, setSidebarTab] = useState<typeof SIDEBAR_TABS[number]['id']>('participants')
   const [categoryId, setCategoryId] = useState('')
   const [selected, setSelected] = useState('')
@@ -67,6 +75,9 @@ function App() {
     if (saveBlocked) return
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(event)); setSaved(true) } catch { setSaved(false) }
   }, [event, saveBlocked])
+  useEffect(() => {
+    try { localStorage.setItem(PAGE_KEY, tab) } catch { /* A page preference must not block editing. */ }
+  }, [tab])
   useEffect(() => {
     const reset = () => setAll(false)
     window.addEventListener('afterprint', reset)
@@ -172,7 +183,7 @@ function App() {
       <nav className="page-nav" aria-label="Main pages">
         <button className={tab === 'registration' ? 'active' : ''} aria-current={tab === 'registration' ? 'page' : undefined} onClick={() => setTab('registration')}><PencilLine size={18} aria-hidden="true" />Registration</button>
         <button className={tab === 'brackets' ? 'active' : ''} aria-current={tab === 'brackets' ? 'page' : undefined} onClick={() => setTab('brackets')}><Trophy size={18} aria-hidden="true" />Brackets & print</button>
-        <button className={tab === 'stickers' ? 'active' : ''} aria-current={tab === 'stickers' ? 'page' : undefined} onClick={() => setTab('stickers')}><Sticker size={18} aria-hidden="true" />Stickers</button>
+        <button className={tab === 'stickers' ? 'active' : ''} aria-current={tab === 'stickers' ? 'page' : undefined} onClick={() => setTab('stickers')}><SquareBottomDashedScissors size={18} aria-hidden="true" />Stickers</button>
         <button className={tab === 'settings' ? 'active' : ''} aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}><Settings size={18} aria-hidden="true" />Event settings</button>
       </nav>
     </header>
