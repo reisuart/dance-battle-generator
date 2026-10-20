@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import '@fontsource-variable/montserrat'
+import './fonts/montserrat/index.css'
 import { choices, rounds } from './bracket'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
