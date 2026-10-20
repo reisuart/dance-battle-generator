@@ -26,6 +26,16 @@ Use Export event to keep a backup; local saving belongs to the current browser a
 
 Validation: `npm run build` checks TypeScript and creates the production build. `node --experimental-strip-types bracket.test.mjs` checks bracket integrity for 0–256 entrants; `node --experimental-strip-types event.test.mjs` checks migration, style registration, division boundaries, missing ages, and import validation (Node 24 recommended).
 
+## Sticker sheets
+
+The Stickers page creates portrait A4 sheets with four labels: two columns of 105 mm and two rows of 148.5 mm. Each label uses locally stored Archivo Black and shows the style, optional Under/Over category, a large number, and the preferred nickname or full name. Choose the category, start number, and name preference before printing. These sticker controls apply to the current visit to the page.
+
+Numbers follow registration order and restart within each category. Table sorting and bracket moves do not affect them. Changing registrations can change numbering; print the final registration list. Every category begins a new sheet and unused quarters stay blank. Preview cut guides never print. Missing ages must be resolved before printing affected age divisions.
+
+Print with A4 portrait, 100% / Actual size, no extra margins, and browser headers/footers off. Named print pages keep sticker printing portrait and bracket printing landscape. Check alignment on the actual sticker stock before a full run; physical printing has not been visually verified here.
+
+Run `node --experimental-strip-types stickers.test.mjs` from `app/` to check pagination, numbering, division assignment, and name fallback.
+
 ## Current limitations
 
 - Each style prints on one A4 page. Larger brackets shrink; multi-page continuation layouts are not implemented yet.

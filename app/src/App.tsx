@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown, Download, GripVertical, PencilLine, Plus, Settings, Trophy, Upload, X } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown, Download, GripVertical, PencilLine, Plus, Settings, Sticker, Trophy, Upload, X } from 'lucide-react'
 import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
 import PaperPreview from './PaperPreview'
 import StylePicker, { SelectOverlay } from './StylePicker'
+import StickersPage from './StickersPage'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
@@ -172,11 +173,13 @@ function App() {
       <nav className="page-nav" aria-label="Main pages">
         <button className={tab === 'registration' ? 'active' : ''} aria-current={tab === 'registration' ? 'page' : undefined} onClick={() => setTab('registration')}><PencilLine size={18} aria-hidden="true" />Registration</button>
         <button className={tab === 'brackets' ? 'active' : ''} aria-current={tab === 'brackets' ? 'page' : undefined} onClick={() => setTab('brackets')}><Trophy size={18} aria-hidden="true" />Brackets & print</button>
+        <button className={tab === 'stickers' ? 'active' : ''} aria-current={tab === 'stickers' ? 'page' : undefined} onClick={() => setTab('stickers')}><Sticker size={18} aria-hidden="true" />Stickers</button>
         <button className={tab === 'settings' ? 'active' : ''} aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}><Settings size={18} aria-hidden="true" />Event settings</button>
       </nav>
     </header>
     <main>
       {message && <div className="notice" role="status">{message}<button onClick={() => setMessage('')}>Dismiss</button></div>}
+      {tab === 'stickers' && <StickersPage event={event} onReview={() => { setFilter('pending'); setTab('registration') }} />}
       {tab === 'settings' && <div className="settings-page"><section className="panel">
         <div className="panel-head"><div><h2>Event settings</h2><p>Event details, styles, age divisions, and optional event backups.</p></div></div>
         <div className="event-settings-fields"><label>EVENT NAME<input value={event.title} onChange={e => setEvent({ ...event, title: e.target.value })} /></label><label>EVENT YEAR<input type="number" min="1900" max="2200" value={event.year} onChange={e => { const year = Number(e.target.value); if (year >= 1900 && year <= 2200) setEvent({ ...event, year }) }} /></label></div>
@@ -264,7 +267,7 @@ function App() {
         </div>}
       </>}
     </main>
-    <div className="print-area">{(all ? groups.filter(c => participants(event, c).length) : active ? [active] : []).map(paper)}</div>
+    {tab !== 'stickers' && <div className="print-area">{(all ? groups.filter(c => participants(event, c).length) : active ? [active] : []).map(paper)}</div>}
   </>
 }
 export default App

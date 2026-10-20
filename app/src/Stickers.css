@@ -1,0 +1,25 @@
+.sticker-controls{margin-bottom:24px}
+.sticker-options{display:flex;align-items:end;flex-wrap:wrap;gap:20px;padding:0 25px 22px}
+.sticker-category{width:260px}.sticker-name-choice{width:240px}.sticker-start{width:100px}
+.sticker-control-label{display:block;font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:7px}
+.sticker-options .style-picker{min-width:0;max-width:none}
+.sticker-options .toggle{padding-bottom:11px}
+.sticker-print-note{padding:18px 25px;border-top:1px solid var(--line,#354237);font-size:12px;line-height:1.7;color:var(--muted,#777)}
+.sticker-number-note{font-size:12px;margin:0;padding:0 25px 20px}
+.sticker-previews{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:24px;align-items:start}
+.sticker-previews .canvas-label{font-size:10px;letter-spacing:.5px}
+.sticker-sheet{position:relative;display:grid;grid-template-columns:repeat(2,105mm);grid-template-rows:repeat(2,148.5mm);width:210mm;height:297mm;min-width:210mm;max-width:210mm;padding:0;margin:0;gap:0;border:0;overflow:hidden;background:#fff;color:#000;color-scheme:light;font-family:'Archivo Black',sans-serif;font-weight:400;font-synthesis:none}
+.sticker-label{width:105mm;height:148.5mm;display:grid;grid-template-rows:auto minmax(0,1fr) auto;align-items:center;padding:18mm 7mm 20mm;gap:2mm;min-width:0;min-height:0;overflow:hidden;text-align:center}
+.sticker-heading{display:flex;flex-direction:column;gap:2mm;align-self:start}
+.sticker-text{display:block;width:100%;font-family:'Archivo Black',sans-serif;font-weight:400;color:#000;white-space:nowrap;line-height:1.2;text-align:center}
+.sticker-number-wrap{display:flex;align-items:center;justify-content:center;min-height:0}
+.sticker-number{line-height:.95}
+.sticker-guides::before,.sticker-guides::after{content:'';position:absolute;pointer-events:none;z-index:1}
+.sticker-guides::before{left:50%;top:0;height:100%;border-left:1px dashed #ccd2c8}
+.sticker-guides::after{top:50%;left:0;width:100%;border-top:1px dashed #ccd2c8}
+@page stickers{size:A4 portrait;margin:0}
+@page brackets{size:A4 landscape;margin:0}
+.paper{page:brackets}
+.sticker-sheet{page:stickers}
+@media print{.sticker-sheet{break-inside:avoid;break-after:page;box-shadow:none}.sticker-sheet:last-child{break-after:auto}.sticker-guides::before,.sticker-guides::after{display:none}}
+@media(max-width:850px){.page-nav{flex-wrap:wrap}.sticker-controls .panel-head{flex-wrap:wrap;gap:16px}.sticker-controls .actions{flex-wrap:wrap}}
