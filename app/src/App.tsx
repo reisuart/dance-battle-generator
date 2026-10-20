@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown, GripVertical, Plus, X } from 'lucide-react'
+import { ArrowDown, ArrowRight, ArrowUp, ArrowUpDown, Download, GripVertical, PencilLine, Plus, Settings, Trophy, Upload, X } from 'lucide-react'
 import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
@@ -168,10 +168,21 @@ function App() {
   }
 
   return <>
-    <header className="app-header">
-      <div className="brand"><b>DB↗</b><div>Dance Battle Generator<small>THE LINEUP STARTS HERE</small></div></div>
-      <div className="actions"><span className="save-status">{saved ? 'Saved on this browser' : 'Save unavailable — export a backup'}</span><button onClick={exportEvent}>Export event</button>
-        <label className="button">Import event<input hidden type="file" accept=".json" onChange={async e => {
+    <header className="app-header page-header">
+      <nav className="page-nav" aria-label="Main pages">
+        <button className={tab === 'registration' ? 'active' : ''} aria-current={tab === 'registration' ? 'page' : undefined} onClick={() => setTab('registration')}><PencilLine size={18} aria-hidden="true" />Registration</button>
+        <button className={tab === 'brackets' ? 'active' : ''} aria-current={tab === 'brackets' ? 'page' : undefined} onClick={() => setTab('brackets')}><Trophy size={18} aria-hidden="true" />Brackets & print</button>
+        <button className={tab === 'settings' ? 'active' : ''} aria-current={tab === 'settings' ? 'page' : undefined} onClick={() => setTab('settings')}><Settings size={18} aria-hidden="true" />Event settings</button>
+      </nav>
+    </header>
+    <main>
+      {message && <div className="notice" role="status">{message}<button onClick={() => setMessage('')}>Dismiss</button></div>}
+      {tab === 'settings' && <div className="settings-page"><section className="panel">
+        <div className="panel-head"><div><h2>Event settings</h2><p>Event details, styles, age divisions, and optional event backups.</p></div></div>
+        <div className="event-settings-fields"><label>EVENT NAME<input value={event.title} onChange={e => setEvent({ ...event, title: e.target.value })} /></label><label>EVENT YEAR<input type="number" min="1900" max="2200" value={event.year} onChange={e => { const year = Number(e.target.value); if (year >= 1900 && year <= 2200) setEvent({ ...event, year }) }} /></label></div>
+        <p className="event-settings-note">A dancer’s age is the age they turn in the event year. Event name and year do not appear on the paper.</p>
+        <div className="event-backups"><div><strong>Event backups</strong><p>{saved ? 'Changes are saved in this browser. Export a copy if you want to keep or transfer this event.' : 'Browser saving is unavailable. Export a copy to keep your changes.'}</p></div><div className="actions"><button onClick={exportEvent}><Download size={16} aria-hidden="true" />Export event</button>
+        <label className="button" tabIndex={0} onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.querySelector('input')?.click() } }}><Upload size={16} aria-hidden="true" />Import event<input hidden type="file" accept=".json" onChange={async e => {
           const file = e.target.files?.[0]; if (!file) return
           try {
             const next = parseEvent(JSON.parse(await file.text()))
@@ -179,18 +190,9 @@ function App() {
           } catch { setMessage('This is not a valid Dance Battle event file.') }
           e.target.value = ''
         }} /></label>
-      </div>
-    </header>
-    <main>
-      <nav className="tabs">
-        <button className={tab === 'styles' ? 'active' : ''} onClick={() => setTab('styles')}>01 / Styles & divisions</button>
-        <button className={tab === 'registration' ? 'active' : ''} onClick={() => setTab('registration')}>02 / Registration</button>
-        <button className={tab === 'brackets' ? 'active' : ''} onClick={() => setTab('brackets')}>03 / Brackets & print</button>
-      </nav>
-      {message && <div className="notice" role="status">{message}<button onClick={() => setMessage('')}>Dismiss</button></div>}
-      {tab === 'styles' && <section className="panel">
+      </div></div></section>
+      <section className="panel">
         <div className="panel-head"><div><h2>Styles & age divisions</h2><p>Define styles once, then select them for each dancer. Age divisions are optional for each style.</p></div></div>
-        <div className="age-reference"><label>AGE REFERENCE YEAR<input type="number" min="1900" max="2200" value={event.year} onChange={e => { const year = Number(e.target.value); if (year >= 1900 && year <= 2200) setEvent({ ...event, year }) }} /></label><p>Age is the age a dancer turns in this year.</p></div>
         <div className="style-config-list">{event.styles.map(s => {
           const count = event.people.filter(p => p.styles.includes(s.id)).length
           return <section className="style-config" key={s.id}>
@@ -202,9 +204,9 @@ function App() {
         })}</div>
         <form className="add-style" onSubmit={e => { e.preventDefault(); addStyle() }}><label>NEW STYLE<input value={newStyle} onChange={e => setNewStyle(e.target.value)} placeholder="e.g. House" /></label><button className="primary" type="submit"><Plus size={16} aria-hidden="true" /> Add style</button></form>
         <div className="panel-bottom">Changing age divisions keeps registrations. Existing brackets may need updating.<button onClick={() => setTab('registration')}>Go to registration <ArrowRight size={15} aria-hidden="true" /></button></div>
-      </section>}
+      </section></div>}
       {tab === 'registration' && <section className="panel">
-        <div className="panel-head"><div><h2>The registration desk</h2><p>Select one or more styles from each dancer’s dropdown.</p></div><div className="actions"><button onClick={() => setTab('styles')}>Manage styles</button><button className="primary" onClick={() => { setFilter('all'); setEvent({ ...event, people: [...event.people, { id: crypto.randomUUID(), name: '', nickname: '', birth: '', styles: [] }] }) }}><Plus size={16} aria-hidden="true" /> Add dancer</button></div></div>
+        <div className="panel-head"><div><h2>The registration desk</h2><p>Select one or more styles from each dancer’s dropdown.</p></div><div className="actions"><button onClick={() => setTab('settings')}>Manage styles</button><button className="primary" onClick={() => { setFilter('all'); setEvent({ ...event, people: [...event.people, { id: crypto.randomUUID(), name: '', nickname: '', birth: '', styles: [] }] }) }}><Plus size={16} aria-hidden="true" /> Add dancer</button></div></div>
         <div className="registration-filter"><div className="registration-filter-control"><span className="control-label">SHOW REGISTRATIONS</span><SelectOverlay label="Show registrations" options={[{ id: 'all', name: 'All dancers' }, ...groups.map(c => ({ id: c.id, name: c.label })), ...(pending.length || filter === 'pending' ? [{ id: 'pending', name: 'Missing or invalid birth year' }] : [])]} selected={[filter]} onChange={ids => setFilter(ids[0])} /></div><span>{visiblePeople.length} dancers shown</span></div>
         {pending.length > 0 && <div className="warning registration-warning">{new Set(pending.map(p => p.person.id)).size} dancers need a valid birth year to join age-divided brackets. <button onClick={() => setFilter('pending')}>Show dancers</button></div>}
         {ageSort !== 'none' && <div className="registration-sort-status"><span role="status">{ageSort === 'ascending' ? 'Youngest first' : 'Oldest first'} · Missing birth years last</span><button onClick={() => setAgeSort('none')}>Reset order</button></div>}
@@ -214,7 +216,7 @@ function App() {
             return <tr key={p.id}><td>{String(i + 1).padStart(2, '0')}</td>
               {(['name', 'nickname', 'birth'] as const).map(field => <td key={field}><input aria-label={`${field} for dancer ${i + 1}`} type={field === 'birth' ? 'number' : 'text'} min={field === 'birth' ? 1900 : undefined} max={field === 'birth' ? event.year : undefined} value={p[field]} placeholder={field === 'birth' ? '2000' : field === 'name' ? 'Dancer name' : 'Stage name'} onChange={e => update(p.id, field, e.target.value)} /></td>)}
               <td className="age">{age(p, event.year) ?? '—'}</td>
-              <td><StylePicker styles={event.styles} selected={p.styles} label={`Styles for dancer ${i + 1}`} onChange={ids => update(p.id, 'styles', ids)} onManage={() => setTab('styles')} /></td>
+              <td><StylePicker styles={event.styles} selected={p.styles} label={`Styles for dancer ${i + 1}`} onChange={ids => update(p.id, 'styles', ids)} onManage={() => setTab('settings')} /></td>
               {hasDivisions && <td className="division-cell">{event.styles.filter(s => s.split && p.styles.includes(s.id)).map(s => <span className={division(p, s, event.year) === 'pending' ? 'division-badge pending' : 'division-badge'} key={s.id}>{s.name} · {division(p, s, event.year) === 'pending' ? 'Birth year needed' : division(p, s, event.year) === 'under' ? `Under ${s.cutoff}` : `Over ${s.cutoff} (${s.cutoff}+)`}</span>)}</td>}
               <td><button className="remove" aria-label={`Remove dancer ${i + 1}`} onClick={() => { if (confirm(`Remove ${p.nickname || p.name || 'this dancer'}?`)) setEvent({ ...event, people: event.people.filter(d => d.id !== p.id) }) }}><X size={16} aria-hidden="true" /></button></td>
             </tr>
