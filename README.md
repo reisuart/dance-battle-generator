@@ -32,7 +32,7 @@ The Stickers page creates portrait A4 sheets with four labels: two columns of 10
 
 Numbers follow registration order and restart within each category. Table sorting and bracket moves do not affect them. Changing registrations can change numbering; print the final registration list. Every category begins a new sheet and unused quarters stay blank. Preview cut guides never print. Missing ages must be resolved before printing affected age divisions.
 
-Print with A4 portrait, 100% / Actual size, no extra margins, and browser headers/footers off. Named print pages keep sticker printing portrait and bracket printing landscape. Check alignment on the actual sticker stock before a full run; physical printing has not been visually verified here.
+Print with A4 portrait, 100% / Actual size, no extra margins, and browser headers/footers off. The sticker Print button prepares an isolated portrait document with only the sticker sheets, avoiding landscape bracket rules and blank pages from the editor. Ctrl+P on the Stickers page also switches the page to portrait. Check alignment on the actual sticker stock before a full run; physical printing has not been visually verified here.
 
 Run `node --experimental-strip-types stickers.test.mjs` from `app/` to check pagination, numbering, division assignment, and name fallback.
 

@@ -1,0 +1,10 @@
+.sticker-sheet{position:relative;display:grid;grid-template-columns:repeat(2,105mm);grid-template-rows:repeat(2,148.5mm);width:210mm;height:297mm;min-width:210mm;max-width:210mm;padding:0;margin:0;gap:0;border:0;overflow:hidden;background:#fff;color:#000;color-scheme:light;font-family:'Archivo Black',sans-serif;font-weight:400;font-synthesis:none}
+.sticker-label{width:105mm;height:148.5mm;display:grid;grid-template-rows:auto minmax(0,1fr) auto;align-items:center;padding:18mm 7mm 20mm;gap:2mm;min-width:0;min-height:0;overflow:hidden;text-align:center}
+.sticker-heading{display:flex;flex-direction:column;gap:2mm;align-self:start}
+.sticker-text{display:block;width:100%;font-family:'Archivo Black',sans-serif;font-weight:400;color:#000;white-space:nowrap;line-height:1.2;text-align:center}
+.sticker-number-wrap{display:flex;align-items:center;justify-content:center;min-height:0}
+.sticker-number{line-height:.95}
+.sticker-guides::before,.sticker-guides::after{content:'';position:absolute;pointer-events:none;z-index:1}
+.sticker-guides::before{left:50%;top:0;height:100%;border-left:1px dashed #ccd2c8}
+.sticker-guides::after{top:50%;left:0;width:100%;border-top:1px dashed #ccd2c8}
+@media print{.sticker-sheet{break-inside:avoid;break-after:page;page-break-inside:avoid;page-break-after:always;box-shadow:none}.sticker-sheet:last-child{break-after:auto;page-break-after:auto}.sticker-guides::before,.sticker-guides::after{display:none}}

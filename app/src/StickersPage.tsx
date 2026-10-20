@@ -4,10 +4,12 @@ import { Printer } from 'lucide-react'
 import { categories, pendingPeople } from './event'
 import type { BattleEvent } from './event'
 import { stickerSheets } from './stickers'
+import { printStickers } from './printStickers'
 import type { StickerSheet } from './stickers'
 import PaperPreview from './PaperPreview'
 import { SelectOverlay } from './StylePicker'
 import './fonts/archivo-black/index.css'
+import './StickerSheet.css'
 import './Stickers.css'
 
 // A label is exactly 105mm wide with 7mm padding on either side.
@@ -49,6 +51,7 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
   const [guides, setGuides] = useState(true)
   const [printAll, setPrintAll] = useState(false)
   const [error, setError] = useState('')
+  const printSource = useRef<HTMLDivElement>(null)
   const groups = categories(event)
   const sheets = stickerSheets(event, start, displayName)
   const active = groups.find(c => c.id === selected) || groups.find(c => sheets.some(s => s.category.id === c.id)) || groups[0]
@@ -61,6 +64,14 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
     return () => window.removeEventListener('afterprint', reset)
   }, [])
 
+  useEffect(() => {
+    // Also give Ctrl+P the correct orientation, without conflicting named @page rules.
+    const style = document.createElement('style')
+    style.textContent = '@page{size:A4 portrait;margin:0}@media print{body>#root{display:none!important}.sticker-print-area{display:block!important}}'
+    document.head.append(style)
+    return () => style.remove()
+  }, [])
+
   const print = async (all: boolean) => {
     if (all ? waiting.length : active && pendingPeople(event, active.style).length) { setError('Check missing or invalid birth years in Registration before printing age-divided stickers.'); return }
     const target = all ? sheets : current
@@ -70,8 +81,9 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
       const characters = target.map(s => `${s.category.label} ${s.labels.map(l => `${l.number} ${l.name}`).join(' ')}`).join(' ')
       await document.fonts.load('400 50px "Archivo Black"', characters)
       await document.fonts.ready
-      setTimeout(() => window.print(), 100)
-    } catch { setError('Archivo Black could not load. Refresh the page before printing.') }
+      await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+      if (printSource.current) await printStickers(printSource.current, characters, () => setPrintAll(false))
+    } catch { setError('The sticker print document could not load. Refresh the page and try again.') }
   }
 
   return <>
@@ -87,6 +99,6 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
     </section>
     {(waiting.length > 0 || error) && <div className="warning">{error || 'Some dancers need a valid birth year before they can receive an Under / Over sticker.'} <button onClick={onReview}>Review registration</button></div>}
     {current.length ? <div className="sticker-previews">{current.map(sheet => <section className="canvas" key={sheet.id}><div className="canvas-label"><span>{sheet.category.label}</span><span>SHEET {sheet.page} / {current.length}</span></div><PaperPreview widthMm={210} heightMm={297}><Sheet sheet={sheet} guides={guides} /></PaperPreview></section>)}</div> : <div className="panel empty">No dancers in this category. Register dancers and select their styles to generate stickers.</div>}
-    {createPortal(<div className="print-area sticker-print-area">{(printAll ? sheets : current).map(sheet => <Sheet sheet={sheet} key={sheet.id} />)}</div>, document.body)}
+    {createPortal(<div ref={printSource} className="print-area sticker-print-area">{(printAll ? sheets : current).map(sheet => <Sheet sheet={sheet} key={sheet.id} />)}</div>, document.body)}
   </>
 }
