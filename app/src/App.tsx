@@ -259,7 +259,6 @@ function App() {
           <section className="canvas"><div className="canvas-label"><span>PRINT PREVIEW / A4 LANDSCAPE</span><span>Winner boxes stay blank for handwriting</span></div>{layout.ids.length > 16 && <div className="warning">More than 16 dancers: names will print smaller on one A4 page. Multi-page brackets are planned.</div>}<PaperPreview>{paper(active)}</PaperPreview></section>
         </div>}
       </>}
-      <div className="app-foot">MADE FOR THE CYPHER.<span>Export your event before clearing browser data.</span></div>
     </main>
     <div className="print-area">{(all ? groups.filter(c => participants(event, c).length) : active ? [active] : []).map(paper)}</div>
   </>
