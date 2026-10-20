@@ -214,7 +214,7 @@ function App() {
         }} /></label>
       </div></div></section>
       <section className="panel">
-        <div className="panel-head"><div><h2>Styles & age divisions</h2><p>Define styles once, then select them for each dancer. Age divisions are optional for each style.</p></div></div>
+        <div className="panel-head"><div><h2>Styles & age divisions</h2><p>Choose the battle formats for each style, then add age divisions only where needed.</p></div></div>
         <div className="style-config-list">{event.styles.map(s => {
           const solos = event.people.filter(p => p.styles.includes(s.id)).length
           const duos = (event.duos || []).filter(d => d.styleId === s.id).length
@@ -222,11 +222,11 @@ function App() {
           return <section className="style-config" key={s.id}>
             <div className="style-config-name"><label>STYLE NAME<input aria-label={`Style name: ${s.name}`} key={s.name} defaultValue={s.name} onBlur={e => { if (e.target.value !== s.name && !renameStyle(s.id, e.target.value)) e.target.value = s.name }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><small>{solos} solo registrations · {duos} duos</small></div>
             <StyleFormats style={s} onChange={patch => setStyle(s.id, patch)} />
-            <button disabled={count > 0} title={count ? 'Remove this style from dancers before deleting it.' : 'Remove unused style'} onClick={() => { if (confirm(`Remove ${s.name}?`)) { setEvent(e => ({ ...e, styles: e.styles.filter(x => x.id !== s.id) })); setFilter('all') } }}>Remove</button>
+            <button disabled={count > 0} title={count ? 'Remove solo registrations and duos before deleting this style.' : 'Remove unused style'} onClick={() => { if (confirm(`Remove ${s.name}?`)) { setEvent(e => ({ ...e, styles: e.styles.filter(x => x.id !== s.id) })); setFilter('all') } }}>Remove</button>
           </section>
         })}</div>
         <form className="add-style" onSubmit={e => { e.preventDefault(); addStyle() }}><label>NEW STYLE<input value={newStyle} onChange={e => setNewStyle(e.target.value)} placeholder="e.g. House" /></label><button className="primary" type="submit"><Plus size={16} aria-hidden="true" /> Add style</button></form>
-        <div className="panel-bottom">Changing age divisions keeps registrations. Existing brackets may need updating.<button onClick={() => setTab('registration')}>Go to registration <ArrowRight size={15} aria-hidden="true" /></button></div>
+        <div className="panel-bottom">Registrations are kept when settings change. Disabled formats are hidden; changed divisions may require rebuilding brackets.<button onClick={() => setTab('registration')}>Go to registration <ArrowRight size={15} aria-hidden="true" /></button></div>
       </section></div>}
       {tab === 'registration' && <nav className="registration-views" aria-label="Registration type"><button className={registrationView === 'dancers' ? 'active' : ''} onClick={() => setRegistrationView('dancers')}>Dancers</button><button className={registrationView === 'duos' ? 'active' : ''} onClick={() => setRegistrationView('duos')}>Duos · 2vs2 <small>{event.duos?.length || 0}</small></button></nav>}
       {tab === 'registration' && registrationView === 'duos' && <DuosRegistration event={event} onChange={setEvent} onSettings={() => setTab('settings')} />}
@@ -293,3 +293,4 @@ function App() {
   </>
 }
 export default App
+
