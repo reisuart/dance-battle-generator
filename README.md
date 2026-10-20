@@ -8,6 +8,14 @@ A first local version is implemented in `app/`: registration, age calculation, s
 
 ## Run locally
 
+## Publish on GitHub Pages
+
+The included `.github/workflows/pages.yml` builds and publishes the app on pushes to `main` or `master`. Create a public GitHub repository, push this repository, then select **Settings → Pages → Source → GitHub Actions**. Run **Publish website** from the Actions tab if the initial push happened before Pages was enabled. Subsequent pushes update the website automatically. Vite uses relative asset paths so the app works under a repository URL.
+
+The public website contains the app, not your browser's saved event. Event data stays in local browser storage; use Event settings → Export/Import to transfer it between devices. The published address also has separate storage from localhost. Do not commit exported participant files to the public repository.
+
+### Local development
+
 From `app/`, run `npm install` once, then `npm run dev`. Open the exact Local URL printed in the terminal; Vite may choose a different port if another app is running.
 
 Use Event settings to define styles (Hip Hop, Modern, and Contemporary are provided). In Registration, use each dancer's dropdown to select one or more solo styles. In Brackets & print, select a category, drag a name onto another slot to swap, and use Battle settings to see round summaries, choose between valid battle formats, and reorder battles. Winner slots intentionally remain blank for handwriting.
