@@ -9,3 +9,6 @@
 .style-popover input{flex-shrink:0}
 .style-picker-done{font-size:12px;margin-top:6px}
 @media print{.style-options.style-popover{display:none}}
+.style-picker-trigger>.lucide{opacity:.65;transition:transform .15s}
+.style-picker-trigger[aria-expanded="true"]>.lucide{transform:rotate(180deg)}
+button.style-picker-trigger{justify-content:space-between}

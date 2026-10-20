@@ -1,4 +1,5 @@
 import { Fragment, useState } from 'react'
+import { ArrowRight, ChevronDown, ChevronUp, GripVertical } from 'lucide-react'
 import { choices, moveBattle, rounds } from './bracket'
 import type { Layout } from './event'
 
@@ -30,7 +31,7 @@ export default function BattleStructure({ layout, name, onChange, disabled }: Pr
         const title = groups.length === 1 ? 'Final' : groups.length === 2 ? 'Semifinals' : groups.length === 4 ? 'Quarterfinals' : 'Battles'
         let offset = 0
         return <details className="battle-round" key={r} open={r === 0}>
-          <summary><span className="round-number">{r + 1}</span><span className="round-caption"><strong>{title}</strong><span>{entrants} dancers <span aria-hidden="true">→</span> {groups.length === 1 ? '1 champion' : `${groups.length} advance`}</span></span></summary>
+          <summary><span className="round-number">{r + 1}</span><span className="round-caption"><strong>{title}</strong><span>{entrants} dancers <ArrowRight size={12} className="round-flow-icon" aria-hidden="true" /> {groups.length === 1 ? '1 champion' : `${groups.length} advance`}</span></span><ChevronDown size={16} className="round-chevron" aria-hidden="true" /></summary>
           {formats.length > 1 ? <fieldset className="battle-format"><legend>BATTLE FORMAT</legend>
             {formats.map(triples => <label className="format-option" key={triples}>
               <input type="radio" name={`round-format-${r}`} checked={groups.filter(n => n === 3).length === triples} onChange={() => {
@@ -58,9 +59,9 @@ export default function BattleStructure({ layout, name, onChange, disabled }: Pr
                 if (disabled || dragging?.round !== r) return
                 e.preventDefault(); move(r, dragging.battle, battle)
               }} onDragEnd={() => { setDragging(null); setDropTarget(null) }}>
-                <div className="battle-card-heading"><div className="battle-card-title">{groups.length > 1 && <svg className="battle-grip" viewBox="0 0 12 18" width="12" height="18" aria-hidden="true"><path d="M3 3h.01M9 3h.01M3 9h.01M9 9h.01M3 15h.01M9 15h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}<strong>Battle {battle + 1}</strong></div><span>{size === 3 ? '3 together' : '1 vs 1'}</span></div>
+                <div className="battle-card-heading"><div className="battle-card-title">{groups.length > 1 && <GripVertical className="battle-grip" size={16} aria-hidden="true" />}<strong>Battle {battle + 1}</strong></div><span>{size === 3 ? '3 together' : '1 vs 1'}</span></div>
                 <div className={`battle-matchup matchup-${size}`} aria-label={contestants.join(' versus ')}>{contestants.map((person, i) => <Fragment key={i}>{i > 0 && <span className="matchup-vs" aria-hidden="true">vs</span>}<span className="matchup-person">{person}</span></Fragment>)}</div>
-                {groups.length > 1 && <div className="battle-move"><span>Drag to reorder</span>{[-1, 1].map(dir => <button className="battle-move-button" key={dir} type="button" draggable={false} title={`Move ${dir < 0 ? 'up' : 'down'}`} aria-label={`Move round ${r + 1} battle ${battle + 1} ${dir < 0 ? 'up' : 'down'}`} disabled={disabled || battle + dir < 0 || battle + dir >= groups.length} onClick={() => move(r, battle, battle + dir)}><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d={dir < 0 ? 'm4 10 4-4 4 4' : 'm4 6 4 4 4-4'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button>)}</div>}
+                {groups.length > 1 && <div className="battle-move"><span>Drag to reorder</span>{[-1, 1].map(dir => <button className="battle-move-button" key={dir} type="button" draggable={false} title={`Move ${dir < 0 ? 'up' : 'down'}`} aria-label={`Move round ${r + 1} battle ${battle + 1} ${dir < 0 ? 'up' : 'down'}`} disabled={disabled || battle + dir < 0 || battle + dir >= groups.length} onClick={() => move(r, battle, battle + dir)}>{dir < 0 ? <ChevronUp size={16} aria-hidden="true" /> : <ChevronDown size={16} aria-hidden="true" />}</button>)}</div>}
               </li>
             })}
           </ol>

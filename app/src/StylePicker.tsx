@@ -1,5 +1,6 @@
 import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
+import { ChevronDown } from 'lucide-react'
 import type { DanceStyle } from './event'
 import './StylePicker.css'
 
@@ -56,7 +57,7 @@ export default function StylePicker({ styles, selected, label, onChange, onManag
     <button ref={trigger} type="button" className="style-picker-trigger" aria-label={label} aria-expanded={open} aria-controls={open ? id : undefined} onClick={() => setOpen(!open)} onKeyDown={e => {
       if (e.key === 'ArrowDown') { e.preventDefault(); setOpen(true); requestAnimationFrame(() => menu.current?.querySelector<HTMLInputElement>('input,button')?.focus()) }
       if (e.key === 'Tab' && !e.shiftKey && open) { e.preventDefault(); menu.current?.querySelector<HTMLInputElement>('input,button')?.focus() }
-    }} title={text}><span>{text}</span><span aria-hidden="true">⌄</span></button>
+    }} title={text}><span>{text}</span><ChevronDown size={16} aria-hidden="true" /></button>
     {open && createPortal(<div ref={menu} id={id} className="style-options style-popover" role="group" aria-label={label} style={position}>
       <div className="style-popover-heading">Select styles</div>
       {styles.map(style => <label key={style.id}><input type="checkbox" checked={selected.includes(style.id)} onChange={e => onChange(e.target.checked ? [...selected, style.id] : selected.filter(id => id !== style.id))} />{style.name}</label>)}
