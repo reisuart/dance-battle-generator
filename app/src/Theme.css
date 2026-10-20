@@ -106,3 +106,6 @@ button:not(.style-picker-trigger):has(>.lucide),.button:has(>.lucide){display:in
 .event-backups p{font-size:12px;max-width:600px;margin:7px 0 0}
 .event-backups .actions{flex-shrink:0}
 @media(max-width:650px){.app-header.page-header{padding:8px 12px}.page-nav{gap:3px}.page-nav button{padding:10px 8px;font-size:11px;gap:5px}.page-nav button .lucide{width:15px;height:15px}.event-backups{align-items:start;flex-direction:column}.event-settings-fields{grid-template-columns:minmax(0,1fr) 100px;gap:12px}}
+/* Keep lineup labels aligned despite the shared icon-button rule. */
+.participants button:has(>.lucide){display:flex;justify-content:flex-start;text-align:left}
+.participants .participant-grip{flex-shrink:0}
