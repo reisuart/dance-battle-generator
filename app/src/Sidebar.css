@@ -11,5 +11,15 @@
 .sidebar-panel .participants{margin:0;display:flex;flex-direction:column}
 .sidebar-panel .battle-editor{margin-top:0;border-top:0;padding-top:0}
 .sidebar-panel .judge-editor{padding-bottom:5px}
+.sidebar details.battle-round{margin-top:12px;padding:12px 0 0;border-top:1px solid #e5e9df;max-height:none;overflow:visible}
+.battle-round>summary{display:flex;align-items:center;gap:10px;cursor:pointer;list-style:none}
+.battle-round>summary::-webkit-details-marker{display:none}
+.battle-round>summary::after{content:'›';margin-left:auto;font-size:22px;color:#7c8972;transform:rotate(90deg)}
+.battle-round[open]>summary{margin-bottom:14px}
+.battle-round[open]>summary::after{transform:rotate(-90deg)}
+.round-caption{display:flex;flex-direction:column;gap:4px}
+.round-caption>strong{font-size:14px}
+.round-caption>span{font-size:11px;line-height:1.4;font-weight:400;color:#6d7866}
+.battle-round>summary:focus-visible{outline:2px solid #d77848;outline-offset:4px}
 @media(max-width:1100px){.workspace{grid-template-columns:330px minmax(0,1fr)}}
 @media(max-width:850px){.workspace{grid-template-columns:1fr}.sidebar-panel{max-height:45vh}.sidebar-tabs button{font-size:12px}}
