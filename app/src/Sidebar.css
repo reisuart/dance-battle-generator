@@ -23,3 +23,21 @@
 .battle-round>summary:focus-visible{outline:2px solid #d77848;outline-offset:4px}
 @media(max-width:1100px){.workspace{grid-template-columns:330px minmax(0,1fr)}}
 @media(max-width:850px){.workspace{grid-template-columns:1fr}.sidebar-panel{max-height:45vh}.sidebar-tabs button{font-size:12px}}
+/* Matchup cards: whole battles move together, names stay readable at any length. */
+.battle-card[draggable="true"]{cursor:grab;transition:border-color .15s,box-shadow .15s,background .15s}
+.battle-card[draggable="true"]:active{cursor:grabbing}
+.battle-card.is-dragging{opacity:.45}
+.battle-card.drop-target{border-color:#57774a;box-shadow:0 0 0 2px #8da57c65;background:#f1f6ec}
+.battle-card-title{display:flex;align-items:center;gap:7px;min-width:0}
+.battle-grip{color:#99a58e;flex-shrink:0}
+.battle-matchup{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:5px;align-items:stretch;margin-top:12px}
+.battle-matchup.matchup-3{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr) auto minmax(0,1fr)}
+.matchup-person{display:flex;align-items:center;justify-content:center;min-width:0;min-height:44px;padding:9px 5px;border:1px solid #dae3d1;border-radius:6px;background:#eef3e8;color:#3f5437;font-size:11px;font-weight:600;line-height:1.4;text-align:center;white-space:normal;overflow-wrap:anywhere}
+.three-person .matchup-person{background:#faecd8;border-color:#ecdbc2;color:#765529}
+.matchup-vs{align-self:center;font-size:10px;color:#8b957f;font-weight:500}
+.battle-card .battle-move{border-top-color:#e3e7dd;padding-top:10px;margin-top:12px;gap:6px}
+.battle-card .battle-move>span{font-size:10px;color:#859078}
+.battle-move .battle-move-button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #dce4d4;border-radius:8px;background:#fff;color:#4d6642;box-shadow:0 1px 2px #30402008;transition:background .15s,border-color .15s}
+.battle-move .battle-move-button:hover:not(:disabled){background:#edf3e7;border-color:#97af87}
+.battle-move .battle-move-button:disabled{opacity:.3;box-shadow:none}
+.battle-announcement{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}

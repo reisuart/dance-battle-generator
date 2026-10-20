@@ -1,4 +1,5 @@
-import { choices, rounds } from './bracket'
+import { Fragment, useState } from 'react'
+import { choices, moveBattle, rounds } from './bracket'
 import type { Layout } from './event'
 
 type Props = { layout: Layout; name: (id: string) => string; onChange: (layout: Layout) => void; disabled: boolean }
@@ -9,6 +10,15 @@ function formatLabel(entrants: number, triples: number) {
 }
 
 export default function BattleStructure({ layout, name, onChange, disabled }: Props) {
+  const [dragging, setDragging] = useState<{ round: number; battle: number } | null>(null)
+  const [dropTarget, setDropTarget] = useState<number | null>(null)
+  const [announcement, setAnnouncement] = useState('')
+  const move = (round: number, from: number, to: number) => {
+    if (disabled) return
+    onChange(moveBattle(layout, round, from, to))
+    setAnnouncement(`Round ${round + 1}: battle ${from + 1} moved to position ${to + 1}.`)
+    setDragging(null); setDropTarget(null)
+  }
   return <div className="battle-editor">
     <p className="battle-help">One dancer advances from every battle. In a three-person battle, all three compete together.</p>
     {disabled && <p className="battle-help">Update the bracket above to arrange these battles.</p>}
@@ -17,7 +27,6 @@ export default function BattleStructure({ layout, name, onChange, disabled }: Pr
       {layout.rounds.map((groups, r) => {
         const entrants = groups.reduce((a, b) => a + b, 0)
         const formats = choices(entrants)
-        const mixed = groups.includes(2) && groups.includes(3)
         const title = groups.length === 1 ? 'Final' : groups.length === 2 ? 'Semifinals' : groups.length === 4 ? 'Quarterfinals' : 'Battles'
         let offset = 0
         return <details className="battle-round" key={r} open={r === 0}>
@@ -34,19 +43,31 @@ export default function BattleStructure({ layout, name, onChange, disabled }: Pr
           <ol className="battle-cards">
             {groups.map((size, battle) => {
               const start = offset; offset += size
-              return <li key={battle} className={size === 3 ? 'battle-card three-person' : 'battle-card'}>
-                <div className="battle-card-heading"><strong>Battle {battle + 1}</strong><span>{size === 3 ? '3 together' : '1 vs 1'}</span></div>
-                {r === 0 ? <ul className="battle-dancers">{layout.ids.slice(start, start + size).map(id => <li key={id}>{name(id).toUpperCase()}</li>)}</ul> : <p className="battle-sources">Winners of round {r}, battles {Array.from({ length: size }, (_, i) => start + i + 1).join(' + ')}</p>}
-                {mixed && size === 3 && <div className="battle-move"><span>Position</span>{[-1, 1].map(dir => <button key={dir} type="button" aria-label={`Move round ${r + 1} battle ${battle + 1} ${dir < 0 ? 'up' : 'down'}`} disabled={battle + dir < 0 || battle + dir >= groups.length || groups[battle + dir] === size} onClick={() => {
-                  const next = [...groups]; [next[battle], next[battle + dir]] = [next[battle + dir], next[battle]]
-                  onChange({ ...layout, rounds: layout.rounds.map((g, i) => i === r ? next : g) })
-                }}>{dir < 0 ? '↑ Up' : '↓ Down'}</button>)}</div>}
+              const contestants = r === 0 ? layout.ids.slice(start, start + size).map(id => name(id).toUpperCase()) : Array.from({ length: size }, (_, i) => `Winner R${r} · Battle ${start + i + 1}`)
+              const isDragging = dragging?.round === r && dragging.battle === battle
+              const isTarget = dragging?.round === r && dropTarget === battle && !isDragging
+              return <li key={battle} className={`battle-card${size === 3 ? ' three-person' : ''}${isDragging ? ' is-dragging' : ''}${isTarget ? ' drop-target' : ''}`} draggable={!disabled && groups.length > 1} onDragStart={e => {
+                if (disabled || groups.length < 2) { e.preventDefault(); return }
+                e.dataTransfer.effectAllowed = 'move'
+                e.dataTransfer.setData('application/x-dance-battle', JSON.stringify({ round: r, battle }))
+                setDragging({ round: r, battle }); setDropTarget(null)
+              }} onDragOver={e => {
+                if (disabled || dragging?.round !== r || dragging.battle === battle) return
+                e.preventDefault(); e.dataTransfer.dropEffect = 'move'; setDropTarget(battle)
+              }} onDrop={e => {
+                if (disabled || dragging?.round !== r) return
+                e.preventDefault(); move(r, dragging.battle, battle)
+              }} onDragEnd={() => { setDragging(null); setDropTarget(null) }}>
+                <div className="battle-card-heading"><div className="battle-card-title">{groups.length > 1 && <svg className="battle-grip" viewBox="0 0 12 18" width="12" height="18" aria-hidden="true"><path d="M3 3h.01M9 3h.01M3 9h.01M9 9h.01M3 15h.01M9 15h.01" stroke="currentColor" strokeWidth="3" strokeLinecap="round" /></svg>}<strong>Battle {battle + 1}</strong></div><span>{size === 3 ? '3 together' : '1 vs 1'}</span></div>
+                <div className={`battle-matchup matchup-${size}`} aria-label={contestants.join(' versus ')}>{contestants.map((person, i) => <Fragment key={i}>{i > 0 && <span className="matchup-vs" aria-hidden="true">vs</span>}<span className="matchup-person">{person}</span></Fragment>)}</div>
+                {groups.length > 1 && <div className="battle-move"><span>Drag to reorder</span>{[-1, 1].map(dir => <button className="battle-move-button" key={dir} type="button" draggable={false} title={`Move ${dir < 0 ? 'up' : 'down'}`} aria-label={`Move round ${r + 1} battle ${battle + 1} ${dir < 0 ? 'up' : 'down'}`} disabled={disabled || battle + dir < 0 || battle + dir >= groups.length} onClick={() => move(r, battle, battle + dir)}><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d={dir < 0 ? 'm4 10 4-4 4 4' : 'm4 6 4 4 4-4'} stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg></button>)}</div>}
               </li>
             })}
           </ol>
-          <p className="round-guidance">{mixed ? 'Move a three-person battle up or down to choose its position.' : r === 0 && groups.length > 1 ? 'To change opponents, swap names on the paper.' : groups.length === 1 ? 'The winner is the champion.' : 'Each winner moves to the next round.'}</p>
+          <p className="round-guidance">{groups.length === 1 ? 'The winner is the champion.' : 'Drag battles within this round, or use the arrows. Their dancers move together.'}</p>
         </details>
       })}
     </fieldset>
+    <span className="battle-announcement" role="status">{announcement}</span>
   </div>
 }
