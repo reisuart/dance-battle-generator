@@ -78,3 +78,7 @@ main>.tabs:first-child{margin-top:0}
   :root{color-scheme:light}
   body,.paper{background:#fff;color:#222}
 }
+
+th .age-sort,th .age-sort:hover{display:inline-flex;align-items:center;gap:6px;border:0;padding:3px 0;background:transparent;color:inherit;font:inherit;letter-spacing:inherit;text-transform:inherit}
+.registration-sort-status{display:flex;align-items:center;gap:15px;padding:0 25px 15px;font-size:12px;color:var(--muted,#777e70)}
+.registration-sort-status button{padding:5px 9px;font-size:11px}

@@ -18,6 +18,16 @@ export function age(person: Person, year: number): number | null {
   return birth >= 1900 && birth <= year ? year - birth : null
 }
 
+export function sortPeopleByAge(people: Person[], year: number, direction: 'none' | 'ascending' | 'descending'): Person[] {
+  if (direction === 'none') return people
+  return [...people].sort((a, b) => {
+    const first = age(a, year), second = age(b, year)
+    if (first === null) return second === null ? 0 : 1
+    if (second === null) return -1
+    return direction === 'ascending' ? first - second : second - first
+  })
+}
+
 export function division(person: Person, style: DanceStyle, year: number): 'all' | 'under' | 'over' | 'pending' {
   if (!style.split) return 'all'
   const years = age(person, year)

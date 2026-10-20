@@ -52,3 +52,17 @@ const individualJudges = parseEvent({...fresh(), layouts: { individual: { ids: [
 assert.deepEqual(individualJudges.layouts.individual.judges,['Nake','Alex, Jr.',''])
 assert.throws(()=>parseEvent({...fresh(),layouts:{bad:{ids:[],rounds:[],judges:[42]}}}))
 console.log('Separate judge boxes and migration from comma-separated names passed.')
+
+const { sortPeopleByAge } = await import('./src/event.ts')
+const ageEntries = [
+ {id:'older',name:'Older',nickname:'',birth:'1990',styles:[]},
+ {id:'missing',name:'Missing',nickname:'',birth:'',styles:[]},
+ {id:'young',name:'Young',nickname:'',birth:'2010',styles:[]},
+ {id:'same',name:'Same',nickname:'',birth:'2010',styles:[]},
+ {id:'invalid',name:'Invalid',nickname:'',birth:'2030',styles:[]},
+]
+assert.deepEqual(sortPeopleByAge(ageEntries,2026,'ascending').map(p=>p.id),['young','same','older','missing','invalid'])
+assert.deepEqual(sortPeopleByAge(ageEntries,2026,'descending').map(p=>p.id),['older','young','same','missing','invalid'])
+assert.deepEqual(ageEntries.map(p=>p.id),['older','missing','young','same','invalid'])
+assert.equal(sortPeopleByAge(ageEntries,2026,'none'),ageEntries)
+console.log('Age sorting passed: youngest/oldest, stable ties, missing ages last, original order preserved.')

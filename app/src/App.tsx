@@ -3,7 +3,7 @@ import './fonts/montserrat/index.css'
 import { rounds } from './bracket'
 import BattleStructure from './BattleStructure'
 import PaperPreview from './PaperPreview'
-import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, stale, STORAGE_KEY } from './event'
+import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
 import './Sidebar.css'
@@ -52,12 +52,13 @@ function App() {
   const [all, setAll] = useState(false)
   const [newStyle, setNewStyle] = useState('')
   const [filter, setFilter] = useState('all')
+  const [ageSort, setAgeSort] = useState<'none' | 'ascending' | 'descending'>('none')
   const groups = categories(event)
   const active = groups.find(c => c.id === categoryId) || groups[0]
   const layout = active ? getLayout(event, active) : null
   const hasDivisions = event.styles.some(s => s.split)
   const pending = event.styles.flatMap(s => pendingPeople(event, s).map(p => ({ person: p, style: s })))
-  const visiblePeople = event.people.filter(p => filter === 'all' || groups.some(c => c.id === filter && p.styles.includes(c.style.id) && division(p, c.style, event.year) === c.division) || filter === 'pending' && event.styles.some(s => p.styles.includes(s.id) && division(p, s, event.year) === 'pending'))
+  const visiblePeople = sortPeopleByAge(event.people.filter(p => filter === 'all' || groups.some(c => c.id === filter && p.styles.includes(c.style.id) && division(p, c.style, event.year) === c.division) || filter === 'pending' && event.styles.some(s => p.styles.includes(s.id) && division(p, s, event.year) === 'pending')), event.year, ageSort)
 
   useEffect(() => {
     if (saveBlocked) return
@@ -204,7 +205,8 @@ function App() {
         <div className="panel-head"><div><h2>The registration desk</h2><p>Select one or more styles from each dancer’s dropdown.</p></div><div className="actions"><button onClick={() => setTab('styles')}>Manage styles</button><button className="primary" onClick={() => { setFilter('all'); setEvent({ ...event, people: [...event.people, { id: crypto.randomUUID(), name: '', nickname: '', birth: '', styles: [] }] }) }}>+ Add dancer</button></div></div>
         <div className="registration-filter"><label>SHOW REGISTRATIONS<select value={filter} onChange={e => setFilter(e.target.value)}><option value="all">All dancers</option>{groups.map(c => <option key={c.id} value={c.id}>{c.label}</option>)}{hasDivisions && <option value="pending">Birth year needed for division</option>}</select></label><span>{visiblePeople.length} dancers shown</span></div>
         {pending.length > 0 && <div className="warning registration-warning">{new Set(pending.map(p => p.person.id)).size} dancers need a valid birth year to join age-divided brackets. <button onClick={() => setFilter('pending')}>Show dancers</button></div>}
-        <div className="table-wrap"><table><thead><tr><th>#</th><th>Full name</th><th>Nickname</th><th>Birth year</th><th>Age</th><th>Styles</th>{hasDivisions && <th>Age divisions</th>}<th /></tr></thead><tbody>
+        {ageSort !== 'none' && <div className="registration-sort-status"><span role="status">{ageSort === 'ascending' ? 'Youngest first' : 'Oldest first'} · Missing birth years last</span><button onClick={() => setAgeSort('none')}>Reset order</button></div>}
+        <div className="table-wrap"><table><thead><tr><th>#</th><th>Full name</th><th>Nickname</th><th>Birth year</th><th aria-sort={ageSort}><button className="age-sort" title={ageSort === 'ascending' ? 'Sort oldest first' : 'Sort youngest first'} onClick={() => setAgeSort(ageSort === 'ascending' ? 'descending' : 'ascending')}>Age <span aria-hidden="true">{ageSort === 'ascending' ? '↑' : ageSort === 'descending' ? '↓' : '↕'}</span></button></th><th>Styles</th>{hasDivisions && <th>Age divisions</th>}<th /></tr></thead><tbody>
           {visiblePeople.map(p => {
             const i = event.people.findIndex(person => person.id === p.id)
             return <tr key={p.id}><td>{String(i + 1).padStart(2, '0')}</td>
