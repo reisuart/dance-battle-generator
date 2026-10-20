@@ -55,7 +55,7 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
   const [printAll, setPrintAll] = useState(false)
   const [error, setError] = useState('')
   const printSource = useRef<HTMLDivElement>(null)
-  const groups = categories(event)
+  const groups = categories(event).filter(c => c.format === 'solo')
   const scope = selected === 'all' || groups.some(c => c.id === selected) ? selected : 'all'
   const sheets = stickerSheets(event, start, displayName, optimize)
   const current = scope === 'all' ? sheets : stickerSheets(event, start, displayName, optimize, [scope])

@@ -1,11 +1,13 @@
 import { rounds } from './bracket.ts'
 
 export type Person = { id: string; name: string; nickname: string; birth: string; styles: string[] }
-export type DanceStyle = { id: string; name: string; split: boolean; cutoff: number }
+export type DanceStyle = { id: string; name: string; split: boolean; cutoff: number; solo?: boolean; duos?: boolean; duoSplit?: boolean; duoCutoff?: number }
+export type Duo = { id: string; name: string; styleId: string; members: [string, string] }
 export type Layout = { ids: string[]; rounds: number[][]; judges: string[] }
 type StoredLayout = Omit<Layout, 'judges'> & { judges: string | string[] }
-export type BattleEvent = { version: 2; title: string; year: number; people: Person[]; styles: DanceStyle[]; layouts: Record<string, Layout> }
-export type Category = { id: string; style: DanceStyle; division: 'all' | 'under' | 'over'; label: string }
+export type BattleEvent = { version: 2; title: string; year: number; people: Person[]; styles: DanceStyle[]; layouts: Record<string, Layout>; duos?: Duo[] }
+export type Category = { id: string; style: DanceStyle; division: 'all' | 'under' | 'over'; label: string; format: 'solo' | 'duo' }
+export type Entry = { id: string; name: string }
 
 export const STORAGE_KEY = 'dance-battle-v1'
 const defaults = (): DanceStyle[] => ['Hip Hop', 'Modern', 'Contemporary'].map((name, i) => ({ id: `style-${i + 1}`, name, split: false, cutoff: 18 }))
@@ -39,24 +41,77 @@ export function categoryLabel(style: DanceStyle, division: 'all' | 'under' | 'ov
 }
 
 export function categories(event: BattleEvent): Category[] {
-  return event.styles.flatMap(style => (style.split ? ['under', 'over'] as const : ['all'] as const).map(d => ({
-    id: `${style.id}:${d}`, style, division: d,
-    label: categoryLabel(style, d),
-  })))
+  return event.styles.flatMap(style => {
+    const solo: Category[] = style.solo === false ? [] : (style.split ? ['under', 'over'] as const : ['all'] as const).map(d => ({ id: `${style.id}:${d}`, style, division: d, label: categoryLabel(style, d), format: 'solo' }))
+    const duos: Category[] = !style.duos ? [] : (style.duoSplit ? ['under', 'over'] as const : ['all'] as const).map(d => ({ id: `${style.id}:duo:${d}`, style, division: d, label: categoryLabel(style, d), format: 'duo' }))
+    return [...solo, ...duos]
+  })
 }
 
 export const named = (person: Person) => Boolean(person.name.trim() || person.nickname.trim())
 export function participants(event: BattleEvent, category: Category): Person[] {
+  if (category.format === 'duo' || category.style.solo === false) return []
   return event.people.filter(p => named(p) && p.styles.includes(category.style.id) && division(p, category.style, event.year) === category.division)
 }
 export function pendingPeople(event: BattleEvent, style: DanceStyle): Person[] {
+  if (style.solo === false) return []
   return event.people.filter(p => named(p) && p.styles.includes(style.id) && division(p, style, event.year) === 'pending')
 }
+
+export function duoAge(event: BattleEvent, duo: Duo): number | null {
+  const members = duo.members.map(id => event.people.find(p => p.id === id))
+  if (!members[0] || !members[1]) return null
+  const first = age(members[0], event.year), second = age(members[1], event.year)
+  return first === null || second === null ? null : (first + second) / 2
+}
+
+export function duoDivision(event: BattleEvent, duo: Duo, style: DanceStyle): 'all' | 'under' | 'over' | 'pending' {
+  if (!style.duoSplit) return 'all'
+  const average = duoAge(event, duo)
+  return average === null ? 'pending' : average < (style.duoCutoff ?? style.cutoff) ? 'under' : 'over'
+}
+
+export function entryName(event: BattleEvent, id: string): string {
+  const duo = event.duos?.find(d => d.id === id)
+  if (duo) return duo.name
+  const person = event.people.find(p => p.id === id)
+  return person ? person.nickname || person.name : 'Removed entry'
+}
+
+export function entries(event: BattleEvent, category: Category): Entry[] {
+  if (category.format === 'solo') return participants(event, category).map(p => ({ id: p.id, name: entryName(event, p.id) }))
+  return (event.duos || []).filter(d => d.styleId === category.style.id && duoDivision(event, d, category.style) === category.division).map(d => ({ id: d.id, name: d.name }))
+}
+
+export function pendingEntries(event: BattleEvent, category: Category): Entry[] {
+  if (category.format === 'solo') return pendingPeople(event, category.style).map(p => ({ id: p.id, name: entryName(event, p.id) }))
+  return (event.duos || []).filter(d => d.styleId === category.style.id && duoDivision(event, d, category.style) === 'pending').map(d => ({ id: d.id, name: d.name }))
+}
+
+export function missingAgePeople(event: BattleEvent): Person[] {
+  const ids = new Set(event.styles.flatMap(s => pendingPeople(event, s).map(p => p.id)))
+  for (const duo of event.duos || []) {
+    const style = event.styles.find(s => s.id === duo.styleId)
+    if (!style?.duos || !style.duoSplit) continue
+    for (const id of duo.members) { const p = event.people.find(p => p.id === id); if (p && age(p, event.year) === null) ids.add(id) }
+  }
+  return event.people.filter(p => ids.has(p.id))
+}
+
+export function duoError(event: BattleEvent, duo: Duo): string | null {
+  if (!duo.name.trim()) return 'Enter a duo name.'
+  if (!event.styles.some(s => s.id === duo.styleId)) return 'Select a dance style.'
+  if (duo.members.length !== 2 || duo.members[0] === duo.members[1] || duo.members.some(id => !event.people.some(p => p.id === id))) return 'Select two different registered dancers.'
+  const others = (event.duos || []).filter(d => d.id !== duo.id && d.styleId === duo.styleId)
+  if (others.some(d => normalize(d.name) === normalize(duo.name))) return 'This duo name is already used in this style.'
+  if (others.some(d => d.members.some(id => duo.members.includes(id)))) return 'A dancer can belong to only one duo per style.'
+  return null
+}
 export function getLayout(event: BattleEvent, category: Category): Layout {
-  return event.layouts[category.id] || { ids: participants(event, category).map(p => p.id), rounds: rounds(participants(event, category).length), judges: ['', '', ''] }
+  return event.layouts[category.id] || { ids: entries(event, category).map(p => p.id), rounds: rounds(entries(event, category).length), judges: ['', '', ''] }
 }
 export function stale(event: BattleEvent, category: Category): boolean {
-  const ids = participants(event, category).map(p => p.id), layout = getLayout(event, category)
+  const ids = entries(event, category).map(p => p.id), layout = getLayout(event, category)
   return ids.length !== layout.ids.length || ids.some(id => !layout.ids.includes(id))
 }
 
@@ -110,7 +165,20 @@ export function parseEvent(value: unknown): BattleEvent {
   for (const s of value.styles) {
     if (!object(s) || typeof s.id !== 'string' || !s.id || typeof s.name !== 'string' || !s.name.trim() || s.name.includes(',') || ids.has(s.id) || names.has(normalize(s.name)) || typeof s.split !== 'boolean' || !Number.isInteger(s.cutoff) || (s.cutoff as number) < 1 || (s.cutoff as number) > 120) throw Error('Invalid styles')
     ids.add(s.id); names.add(normalize(s.name))
+    for (const option of ['solo', 'duos', 'duoSplit']) if (s[option] !== undefined && typeof s[option] !== 'boolean') throw Error('Invalid battle format')
+    if (s.duoCutoff !== undefined && (!Number.isInteger(s.duoCutoff) || (s.duoCutoff as number) < 1 || (s.duoCutoff as number) > 120)) throw Error('Invalid duo age cutoff')
+    if (s.solo === false && !s.duos) throw Error('At least one battle format is required')
   }
   if (value.people.some(p => (p.styles as string[]).some(id => !ids.has(id)))) throw Error('Unknown style')
-  return { ...value, layouts: Object.fromEntries(Object.entries(value.layouts).map(([id, layout]) => [id, migrateLayout(layout)])) } as unknown as BattleEvent
+  const result = { ...value, layouts: Object.fromEntries(Object.entries(value.layouts).map(([id, layout]) => [id, migrateLayout(layout)])) } as unknown as BattleEvent
+  if (result.duos !== undefined) {
+    if (!Array.isArray(result.duos)) throw Error('Invalid duos')
+    const duoIds = new Set<string>()
+    for (const d of result.duos) {
+      if (!object(d) || typeof d.id !== 'string' || !d.id || seen.has(d.id) || duoIds.has(d.id) || typeof d.name !== 'string' || typeof d.styleId !== 'string' || !Array.isArray(d.members) || d.members.some(id => typeof id !== 'string')) throw Error('Invalid duo')
+      duoIds.add(d.id)
+      if (duoError(result, d)) throw Error('Invalid duo registration')
+    }
+  }
+  return result
 }

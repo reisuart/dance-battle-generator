@@ -22,7 +22,7 @@ export function stickerNameLines(text: string, measure: (value: string) => numbe
 
 export function stickerSheets(event: BattleEvent, start = 1, displayName: 'nickname' | 'name' = 'nickname', optimize = false, categoryIds?: string[]): StickerSheet[] {
   if (!Number.isInteger(start) || start < 1 || start > 9999) throw Error('Starting number must be between 1 and 9999')
-  const sheets = categories(event).filter(category => !categoryIds || categoryIds.includes(category.id)).flatMap(category => {
+  const sheets = categories(event).filter(category => category.format === 'solo' && (!categoryIds || categoryIds.includes(category.id))).flatMap(category => {
     // Use registration order, independent of the age-sort view or bracket rearrangements.
     const labels = participants(event, category).map((p, i) => ({
       personId: p.id, number: start + i, category,

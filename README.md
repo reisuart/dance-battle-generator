@@ -10,7 +10,15 @@ A first local version is implemented in `app/`: registration, age calculation, s
 
 From `app/`, run `npm install` once, then `npm run dev`. Open the exact Local URL printed in the terminal; Vite may choose a different port if another app is running.
 
-Use Styles & divisions to define styles (Hip Hop, Modern, and Contemporary are provided). In Registration, use each dancer's dropdown to select one or more styles. In Brackets & print, select a category, drag a name onto another slot to swap, and use Arrange battles to see round summaries, choose between valid battle formats, and reposition highlighted three-person battles. Winner slots intentionally remain blank for handwriting.
+Use Event settings to define styles (Hip Hop, Modern, and Contemporary are provided). In Registration, use each dancer's dropdown to select one or more solo styles. In Brackets & print, select a category, drag a name onto another slot to swap, and use Battle settings to see round summaries, choose between valid battle formats, and reorder battles. Winner slots intentionally remain blank for handwriting.
+
+## Duos / 2vs2
+
+In Event settings, choose 1vs1 only, 1vs1 + 2vs2, or 2vs2 only for each style. Register the individual dancers first; leave solo styles empty if they only enter as a duo. In Registration → Duos, create a custom duo name and select its style and two members. Each dancer can join one duo per style and can also enter solo independently.
+
+Duos appear in separate 2vs2 bracket categories under their group names. The existing placement, swapping, judges, battle reordering, and printing controls apply. A three-entry battle means three duos compete together and one advances. Duo entries never generate stickers; dancers who also register solo can still receive their solo stickers.
+
+Duo age divisions are independent of solo divisions and disabled by default. When enabled, they use the exact average of both dancers’ event-year ages: below the cutoff is Under, at or above it is Over. Both birth years are then required before printing. Existing events load as solo-only, and event export/import includes duo registrations. Run `node --experimental-strip-types duos.test.mjs` from `app/` to validate these rules.
 
 Optionally enable Under / Over for any style and set its age cutoff. Under means strictly below that age; Over includes the cutoff age and above. Categories appear in registration filters and as separate brackets. Missing or invalid birth years are flagged and block printing the affected style until corrected. Other styles can remain undivided. Event year controls ages, but neither event name nor year prints on the bracket; the page contains judges, style/division heading, and larger participant names.
 

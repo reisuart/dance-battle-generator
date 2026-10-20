@@ -6,11 +6,14 @@ import BattleStructure from './BattleStructure'
 import PaperPreview from './PaperPreview'
 import StylePicker, { SelectOverlay } from './StylePicker'
 import StickersPage from './StickersPage'
-import { age, categories, categoryLabel, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
+import DuosRegistration from './DuosRegistration'
+import StyleFormats from './StyleFormats'
+import { age, categories, categoryLabel, division, fresh, getLayout, normalize, parseEvent, entries, entryName, missingAgePeople, pendingEntries, sortPeopleByAge, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
 import './Sidebar.css'
 import './Theme.css'
+import './Duos.css'
 
 const SIDEBAR_TABS = [
   { id: 'participants', label: 'Participants' },
@@ -64,12 +67,14 @@ function App() {
   const [newStyle, setNewStyle] = useState('')
   const [filter, setFilter] = useState('all')
   const [ageSort, setAgeSort] = useState<'none' | 'ascending' | 'descending'>('none')
+  const [registrationView, setRegistrationView] = useState<'dancers' | 'duos'>('dancers')
   const groups = categories(event)
+  const soloGroups = groups.filter(c => c.format === 'solo')
   const active = groups.find(c => c.id === categoryId) || groups[0]
   const layout = active ? getLayout(event, active) : null
-  const hasDivisions = event.styles.some(s => s.split)
-  const pending = event.styles.flatMap(s => pendingPeople(event, s).map(p => ({ person: p, style: s })))
-  const visiblePeople = sortPeopleByAge(event.people.filter(p => filter === 'all' || groups.some(c => c.id === filter && p.styles.includes(c.style.id) && division(p, c.style, event.year) === c.division) || filter === 'pending' && event.styles.some(s => p.styles.includes(s.id) && division(p, s, event.year) === 'pending')), event.year, ageSort)
+  const hasDivisions = event.styles.some(s => s.solo !== false && s.split)
+  const pending = missingAgePeople(event).map(person => ({ person }))
+  const visiblePeople = sortPeopleByAge(event.people.filter(p => filter === 'all' || soloGroups.some(c => c.id === filter && p.styles.includes(c.style.id) && division(p, c.style, event.year) === c.division) || filter === 'pending' && pending.some(entry => entry.person.id === p.id)), event.year, ageSort)
 
   useEffect(() => {
     if (saveBlocked) return
@@ -87,7 +92,7 @@ function App() {
   const saveLayout = (next: Layout) => {
     if (active) setEvent(e => ({ ...e, layouts: { ...e.layouts, [active.id]: next } }))
   }
-  const name = (id: string) => { const p = event.people.find(p => p.id === id); return p ? p.nickname || p.name : 'Removed dancer' }
+  const name = (id: string) => entryName(event, id)
   const swap = (id: string, index: number) => {
     if (!active || !layout || stale(event, active)) return
     const ids = [...layout.ids], from = ids.indexOf(id)
@@ -97,6 +102,11 @@ function App() {
     saveLayout({ ...layout, ids }); setSelected('')
   }
   const update = (id: string, field: keyof Person, value: string | string[]) => setEvent(e => ({ ...e, people: e.people.map(p => p.id === id ? { ...p, [field]: value } : p) }))
+  const removePerson = (p: Person) => {
+    const duos = (event.duos || []).filter(d => d.members.includes(p.id))
+    if (duos.length) { setMessage(`Remove this dancer from ${duos.map(d => d.name).join(', ')} in Duos before deleting their registration.`); return }
+    if (confirm(`Remove ${p.nickname || p.name || 'this dancer'}?`)) setEvent({ ...event, people: event.people.filter(d => d.id !== p.id) })
+  }
   const setStyle = (id: string, patch: Partial<DanceStyle>) => {
     setEvent(e => ({ ...e, styles: e.styles.map(s => s.id === id ? { ...s, ...patch } : s) }))
     setSelected(''); setFilter('all')
@@ -120,9 +130,8 @@ function App() {
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
   const print = async (every: boolean) => {
-    const targets = every ? groups.filter(c => participants(event, c).length) : active ? [active] : []
-    const affectedStyles = new Set(targets.map(c => c.style.id))
-    if (pending.some(p => every || affectedStyles.has(p.style.id))) { setMessage('Add valid birth years for dancers awaiting age divisions before printing this style.'); return }
+    const targets = every ? groups.filter(c => entries(event, c).length) : active ? [active] : []
+    if ((every ? groups : active ? [active] : []).some(c => pendingEntries(event, c).length)) { setMessage('Add valid birth years for dancers or duo members awaiting age divisions before printing.'); return }
     if (targets.some(c => stale(event, c))) { setMessage('Registration or age divisions changed. Update the affected brackets before printing.'); return }
     try {
       await Promise.all([document.fonts.load('400 16px "Montserrat Variable"'), document.fonts.load('700 18px "Montserrat Variable"')])
@@ -148,7 +157,7 @@ function App() {
     const x = (r: number) => edge + r * (boxWidth + gap)
     return <article className="paper" key={category.id}>
       <div className="judges"><b>JUDGES</b>{l.judges.map((judge, i) => <span className="judge-box" key={i}>{judge.trim().toUpperCase() || '\u00a0'}</span>)}</div>
-      <h2>{category.label.toUpperCase()} <span>BATTLE 1VS1</span></h2>
+      <h2>{category.label.toUpperCase()} <span>BATTLE {category.format === 'duo' ? '2VS2' : '1VS1'}</span></h2>
       {l.ids.length ? <svg viewBox={`0 0 ${width} ${height}`} aria-label={`${category.label} bracket`}>
         {l.rounds.flatMap((g, r) => {
           let offset = 0
@@ -189,7 +198,7 @@ function App() {
     </header>
     <main>
       {message && <div className="notice" role="status">{message}<button onClick={() => setMessage('')}>Dismiss</button></div>}
-      {tab === 'stickers' && <StickersPage event={event} onReview={() => { setFilter('pending'); setTab('registration') }} />}
+      {tab === 'stickers' && <StickersPage event={event} onReview={() => { setFilter('pending'); setRegistrationView('dancers'); setTab('registration') }} />}
       {tab === 'settings' && <div className="settings-page"><section className="panel">
         <div className="panel-head"><div><h2>Event settings</h2><p>Event details, styles, age divisions, and optional event backups.</p></div></div>
         <div className="event-settings-fields"><label>EVENT NAME<input value={event.title} onChange={e => setEvent({ ...event, title: e.target.value })} /></label><label>EVENT YEAR<input type="number" min="1900" max="2200" value={event.year} onChange={e => { const year = Number(e.target.value); if (year >= 1900 && year <= 2200) setEvent({ ...event, year }) }} /></label></div>
@@ -207,31 +216,34 @@ function App() {
       <section className="panel">
         <div className="panel-head"><div><h2>Styles & age divisions</h2><p>Define styles once, then select them for each dancer. Age divisions are optional for each style.</p></div></div>
         <div className="style-config-list">{event.styles.map(s => {
-          const count = event.people.filter(p => p.styles.includes(s.id)).length
+          const solos = event.people.filter(p => p.styles.includes(s.id)).length
+          const duos = (event.duos || []).filter(d => d.styleId === s.id).length
+          const count = solos + duos
           return <section className="style-config" key={s.id}>
-            <div className="style-config-name"><label>STYLE NAME<input aria-label={`Style name: ${s.name}`} key={s.name} defaultValue={s.name} onBlur={e => { if (e.target.value !== s.name && !renameStyle(s.id, e.target.value)) e.target.value = s.name }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><small>{count} registered</small></div>
-            <label className="toggle"><input type="checkbox" checked={s.split} onChange={e => setStyle(s.id, { split: e.target.checked })} />Split into Under / Over</label>
-            {s.split ? <div className="cutoff"><label>AGE CUTOFF<input type="number" min="1" max="120" aria-label={`Age cutoff for ${s.name}`} key={s.cutoff} defaultValue={s.cutoff} onBlur={e => { const n = Number(e.target.value); if (Number.isInteger(n) && n >= 1 && n <= 120) setStyle(s.id, { cutoff: n }); else { e.target.value = String(s.cutoff); setMessage('The age cutoff must be a whole number from 1 to 120.') } }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><p>Under: ages below {s.cutoff}.<br />Over: ages {s.cutoff} and above.</p></div> : <p className="all-ages">All ages in one bracket.</p>}
+            <div className="style-config-name"><label>STYLE NAME<input aria-label={`Style name: ${s.name}`} key={s.name} defaultValue={s.name} onBlur={e => { if (e.target.value !== s.name && !renameStyle(s.id, e.target.value)) e.target.value = s.name }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><small>{solos} solo registrations · {duos} duos</small></div>
+            <StyleFormats style={s} onChange={patch => setStyle(s.id, patch)} />
             <button disabled={count > 0} title={count ? 'Remove this style from dancers before deleting it.' : 'Remove unused style'} onClick={() => { if (confirm(`Remove ${s.name}?`)) { setEvent(e => ({ ...e, styles: e.styles.filter(x => x.id !== s.id) })); setFilter('all') } }}>Remove</button>
           </section>
         })}</div>
         <form className="add-style" onSubmit={e => { e.preventDefault(); addStyle() }}><label>NEW STYLE<input value={newStyle} onChange={e => setNewStyle(e.target.value)} placeholder="e.g. House" /></label><button className="primary" type="submit"><Plus size={16} aria-hidden="true" /> Add style</button></form>
         <div className="panel-bottom">Changing age divisions keeps registrations. Existing brackets may need updating.<button onClick={() => setTab('registration')}>Go to registration <ArrowRight size={15} aria-hidden="true" /></button></div>
       </section></div>}
-      {tab === 'registration' && <section className="panel">
-        <div className="panel-head"><div><h2>The registration desk</h2><p>Select one or more styles from each dancer’s dropdown.</p></div><div className="actions"><button onClick={() => setTab('settings')}>Manage styles</button><button className="primary" onClick={() => { setFilter('all'); setEvent({ ...event, people: [...event.people, { id: crypto.randomUUID(), name: '', nickname: '', birth: '', styles: [] }] }) }}><Plus size={16} aria-hidden="true" /> Add dancer</button></div></div>
-        <div className="registration-filter"><div className="registration-filter-control"><span className="control-label">SHOW REGISTRATIONS</span><SelectOverlay label="Show registrations" options={[{ id: 'all', name: 'All dancers' }, ...groups.map(c => ({ id: c.id, name: c.label })), ...(pending.length || filter === 'pending' ? [{ id: 'pending', name: 'Missing or invalid birth year' }] : [])]} selected={[filter]} onChange={ids => setFilter(ids[0])} /></div><span>{visiblePeople.length} dancers shown</span></div>
+      {tab === 'registration' && <nav className="registration-views" aria-label="Registration type"><button className={registrationView === 'dancers' ? 'active' : ''} onClick={() => setRegistrationView('dancers')}>Dancers</button><button className={registrationView === 'duos' ? 'active' : ''} onClick={() => setRegistrationView('duos')}>Duos · 2vs2 <small>{event.duos?.length || 0}</small></button></nav>}
+      {tab === 'registration' && registrationView === 'duos' && <DuosRegistration event={event} onChange={setEvent} onSettings={() => setTab('settings')} />}
+      {tab === 'registration' && registrationView === 'dancers' && <section className="panel">
+        <div className="panel-head"><div><h2>The registration desk</h2><p>Select solo styles for 1vs1. For duo-only dancers, leave solo styles empty and pair them in Duos.</p></div><div className="actions"><button onClick={() => setTab('settings')}>Manage styles</button><button className="primary" onClick={() => { setFilter('all'); setEvent({ ...event, people: [...event.people, { id: crypto.randomUUID(), name: '', nickname: '', birth: '', styles: [] }] }) }}><Plus size={16} aria-hidden="true" /> Add dancer</button></div></div>
+        <div className="registration-filter"><div className="registration-filter-control"><span className="control-label">SHOW REGISTRATIONS</span><SelectOverlay label="Show registrations" options={[{ id: 'all', name: 'All dancers' }, ...soloGroups.map(c => ({ id: c.id, name: c.label })), ...(pending.length || filter === 'pending' ? [{ id: 'pending', name: 'Missing or invalid birth year' }] : [])]} selected={[filter]} onChange={ids => setFilter(ids[0])} /></div><span>{visiblePeople.length} dancers shown</span></div>
         {pending.length > 0 && <div className="warning registration-warning">{new Set(pending.map(p => p.person.id)).size} dancers need a valid birth year to join age-divided brackets. <button onClick={() => setFilter('pending')}>Show dancers</button></div>}
         {ageSort !== 'none' && <div className="registration-sort-status"><span role="status">{ageSort === 'ascending' ? 'Youngest first' : 'Oldest first'} · Missing birth years last</span><button onClick={() => setAgeSort('none')}>Reset order</button></div>}
-        <div className="table-wrap"><table><thead><tr><th>#</th><th>Full name</th><th>Nickname</th><th>Birth year</th><th aria-sort={ageSort}><button className="age-sort" title={ageSort === 'ascending' ? 'Sort oldest first' : 'Sort youngest first'} onClick={() => setAgeSort(ageSort === 'ascending' ? 'descending' : 'ascending')}>Age {ageSort === 'ascending' ? <ArrowUp size={14} aria-hidden="true" /> : ageSort === 'descending' ? <ArrowDown size={14} aria-hidden="true" /> : <ArrowUpDown size={14} aria-hidden="true" />}</button></th><th>Styles</th>{hasDivisions && <th>Age divisions</th>}<th /></tr></thead><tbody>
+        <div className="table-wrap"><table><thead><tr><th>#</th><th>Full name</th><th>Nickname</th><th>Birth year</th><th aria-sort={ageSort}><button className="age-sort" title={ageSort === 'ascending' ? 'Sort oldest first' : 'Sort youngest first'} onClick={() => setAgeSort(ageSort === 'ascending' ? 'descending' : 'ascending')}>Age {ageSort === 'ascending' ? <ArrowUp size={14} aria-hidden="true" /> : ageSort === 'descending' ? <ArrowDown size={14} aria-hidden="true" /> : <ArrowUpDown size={14} aria-hidden="true" />}</button></th><th>Solo styles · 1vs1</th>{hasDivisions && <th>Solo age divisions</th>}<th /></tr></thead><tbody>
           {visiblePeople.map(p => {
             const i = event.people.findIndex(person => person.id === p.id)
             return <tr key={p.id}><td>{String(i + 1).padStart(2, '0')}</td>
               {(['name', 'nickname', 'birth'] as const).map(field => <td key={field}><input aria-label={`${field} for dancer ${i + 1}`} type={field === 'birth' ? 'number' : 'text'} min={field === 'birth' ? 1900 : undefined} max={field === 'birth' ? event.year : undefined} value={p[field]} placeholder={field === 'birth' ? '2000' : field === 'name' ? 'Dancer name' : 'Stage name'} onChange={e => update(p.id, field, e.target.value)} /></td>)}
               <td className="age">{age(p, event.year) ?? '—'}</td>
-              <td><StylePicker styles={event.styles} selected={p.styles} label={`Styles for dancer ${i + 1}`} onChange={ids => update(p.id, 'styles', ids)} onManage={() => setTab('settings')} /></td>
-              {hasDivisions && <td className="division-cell">{event.styles.filter(s => s.split && p.styles.includes(s.id)).map(s => <span className={division(p, s, event.year) === 'pending' ? 'division-badge pending' : 'division-badge'} key={s.id}>{division(p, s, event.year) === 'pending' ? `${s.name}: Birth year needed` : categoryLabel(s, division(p, s, event.year) === 'under' ? 'under' : 'over')}</span>)}</td>}
-              <td><button className="remove" aria-label={`Remove dancer ${i + 1}`} onClick={() => { if (confirm(`Remove ${p.nickname || p.name || 'this dancer'}?`)) setEvent({ ...event, people: event.people.filter(d => d.id !== p.id) }) }}><X size={16} aria-hidden="true" /></button></td>
+              <td><StylePicker styles={event.styles.filter(s => s.solo !== false || p.styles.includes(s.id))} selected={p.styles} label={`Styles for dancer ${i + 1}`} onChange={ids => update(p.id, 'styles', ids)} onManage={() => setTab('settings')} /></td>
+              {hasDivisions && <td className="division-cell">{event.styles.filter(s => s.solo !== false && s.split && p.styles.includes(s.id)).map(s => <span className={division(p, s, event.year) === 'pending' ? 'division-badge pending' : 'division-badge'} key={s.id}>{division(p, s, event.year) === 'pending' ? `${s.name}: Birth year needed` : categoryLabel(s, division(p, s, event.year) === 'under' ? 'under' : 'over')}</span>)}</td>}
+              <td><button className="remove" aria-label={`Remove dancer ${i + 1}`} onClick={() => removePerson(p)}><X size={16} aria-hidden="true" /></button></td>
             </tr>
           })}
         </tbody></table></div>
@@ -239,11 +251,11 @@ function App() {
         <div className="panel-bottom">Brackets use nicknames when provided, otherwise full names.<button onClick={() => setTab('brackets')}>Arrange brackets <ArrowRight size={15} aria-hidden="true" /></button></div>
       </section>}
       {tab === 'brackets' && <>
-        <div className="toolbar"><div className="style-tabs">{groups.map(c => <button key={c.id} className={c.id === active?.id ? 'active' : ''} onClick={() => { setCategoryId(c.id); setSelected('') }}>{c.label} <small>{participants(event, c).length}</small></button>)}</div><div className="actions"><button disabled={!groups.some(c => participants(event, c).length)} onClick={() => print(true)}>Print all categories</button><button className="primary" disabled={!active || !participants(event, active).length} onClick={() => print(false)}>Print / Save PDF</button></div></div>
-        {pending.length > 0 && <div className="warning">Some dancers are waiting for a birth year before they can be placed in Under / Over brackets. <button onClick={() => { setFilter('pending'); setTab('registration') }}>Review registration</button></div>}
+        <div className="toolbar"><div className="style-tabs">{groups.map(c => <button key={c.id} className={c.id === active?.id ? 'active' : ''} onClick={() => { setCategoryId(c.id); setSelected('') }}>{c.label} <span className="format-tag">{c.format === 'duo' ? '2vs2' : '1vs1'}</span> <small>{entries(event, c).length}</small></button>)}</div><div className="actions"><button disabled={!groups.some(c => entries(event, c).length)} onClick={() => print(true)}>Print all categories</button><button className="primary" disabled={!active || !entries(event, active).length} onClick={() => print(false)}>Print / Save PDF</button></div></div>
+        {pending.length > 0 && <div className="warning">Some dancers are waiting for a birth year before they can be placed in Under / Over brackets. <button onClick={() => { setFilter('pending'); setRegistrationView('dancers'); setTab('registration') }}>Review registration</button></div>}
         {!active || !layout ? <div className="panel empty">Define a dance style to create brackets.</div> : <div className="workspace">
-          <aside className="sidebar"><div className="eyebrow">YOUR LINEUP</div><h2>{active.label}</h2>
-            {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: participants(event, active).map(p => p.id), rounds: rounds(participants(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
+          <aside className="sidebar"><div className="eyebrow">YOUR LINEUP</div><h2>{active.label} <span className="format-tag">{active.format === 'duo' ? '2vs2' : '1vs1'}</span></h2>
+            {stale(event, active) && <div className="warning">Registration or age divisions changed. Update this bracket before arranging or printing.<button onClick={() => { if (confirm('Rebuild this bracket? Manual placements will reset.')) saveLayout({ ids: entries(event, active).map(p => p.id), rounds: rounds(entries(event, active).length), judges: layout.judges }) }}>Update bracket</button></div>}
             <div className="sidebar-tabs" role="tablist" aria-label="Bracket editor sections">
               {SIDEBAR_TABS.map((item, i) => <button type="button" key={item.id} id={`sidebar-tab-${item.id}`} role="tab" aria-selected={sidebarTab === item.id} aria-controls={`sidebar-panel-${item.id}`} tabIndex={sidebarTab === item.id ? 0 : -1} onClick={() => { setSidebarTab(item.id); setSelected('') }} onKeyDown={e => {
                 let next = i
@@ -259,9 +271,9 @@ function App() {
             <section className="sidebar-panel" key={`${active.id}-${sidebarTab}`} id={`sidebar-panel-${sidebarTab}`} role="tabpanel" aria-labelledby={`sidebar-tab-${sidebarTab}`} tabIndex={0}>
             {sidebarTab === 'participants' && <>
               <p>Drag a name onto a slot to swap. Or click a name, then a slot.</p>
-              <div className="participant-count">{participants(event, active).length} participants</div>
-              <div className="participants">{participants(event, active).map(p => <button key={p.id} draggable className={selected === p.id ? 'chosen' : ''} onDragStart={e => e.dataTransfer.setData('text/plain', p.id)} onClick={() => setSelected(selected === p.id ? '' : p.id)}><GripVertical size={16} className="participant-grip" aria-hidden="true" />{name(p.id)}</button>)}</div>
-              {!participants(event, active).length && <p>No participants in this category yet.</p>}
+              <div className="participant-count">{entries(event, active).length} {active.format === 'duo' ? 'duos' : 'participants'}</div>
+              <div className="participants">{entries(event, active).map(p => <button key={p.id} draggable className={selected === p.id ? 'chosen' : ''} onDragStart={e => e.dataTransfer.setData('text/plain', p.id)} onClick={() => setSelected(selected === p.id ? '' : p.id)}><GripVertical size={16} className="participant-grip" aria-hidden="true" />{name(p.id)}</button>)}</div>
+              {!entries(event, active).length && <p>No participants in this category yet.</p>}
             </>}
             {sidebarTab === 'judges' && <><p>Add one judge per box. Names appear above this category’s bracket.</p><fieldset className="judge-editor"><legend>JUDGES</legend>
               {layout.judges.map((judge, i) => <div className="judge-input" key={i}>
@@ -270,14 +282,14 @@ function App() {
               </div>)}
               <button className="add-judge" onClick={() => saveLayout({ ...layout, judges: [...layout.judges, ''] })}><Plus size={14} aria-hidden="true" /> Add judge</button>
             </fieldset></>}
-            {sidebarTab === 'battles' && <BattleStructure layout={layout} name={name} onChange={saveLayout} disabled={stale(event, active)} />}
+            {sidebarTab === 'battles' && <BattleStructure layout={layout} name={name} onChange={saveLayout} disabled={stale(event, active)} duos={active.format === 'duo'} />}
             </section>
           </aside>
           <section className="canvas"><div className="canvas-label"><span>PRINT PREVIEW / A4 LANDSCAPE</span><span>Winner boxes stay blank for handwriting</span></div>{layout.ids.length > 16 && <div className="warning">More than 16 dancers: names will print smaller on one A4 page. Multi-page brackets are planned.</div>}<PaperPreview>{paper(active)}</PaperPreview></section>
         </div>}
       </>}
     </main>
-    {tab !== 'stickers' && <div className="print-area">{(all ? groups.filter(c => participants(event, c).length) : active ? [active] : []).map(paper)}</div>}
+    {tab !== 'stickers' && <div className="print-area">{(all ? groups.filter(c => entries(event, c).length) : active ? [active] : []).map(paper)}</div>}
   </>
 }
 export default App
