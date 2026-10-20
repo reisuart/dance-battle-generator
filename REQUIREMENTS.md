@@ -4,7 +4,10 @@
 
 ### Registration
 
-- Store each dancer's name, nickname, birth year, and one or more registered styles.
+- Store each dancer's name, nickname, birth year, and one or more registered styles selected from a dropdown.
+- Provide a style-management section with Hip Hop, Modern, and Contemporary initially defined; allow additional styles without duplicate names.
+- Optionally divide each style into Under and Over categories at an editable age cutoff. Under means below the cutoff; Over includes the cutoff and above. Show each dancer's category in registration and generate separate brackets.
+- Flag missing birth years for age-divided registrations rather than silently excluding those dancers.
 - Calculate age as event year minus birth year; exact birth dates are unnecessary.
 - A dancer registered for multiple styles appears in each corresponding style's participant list.
 
@@ -23,6 +26,7 @@
 
 - Generate separate brackets for each style.
 - Allow judges' names above the bracket.
+- Use larger participant names and omit event-name/year headers and footers from printed pages.
 - Use the supplied visual reference as layout inspiration: readable name boxes, connecting lines, style heading, judges, and empty winner boxes.
 - Print at actual A4 dimensions without editor controls or participant sidebar.
 - Allow multiple pages when a bracket cannot remain legible on one page.

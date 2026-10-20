@@ -10,17 +10,20 @@ A first local version is implemented in `app/`: registration, age calculation, s
 
 From `app/`, run `npm install` once, then `npm run dev`. Open the exact Local URL printed in the terminal; Vite may choose a different port if another app is running.
 
-Use Registration to add dancers. Separate styles with commas. In Brackets & print, select a style, drag a name onto another slot to swap, and expand Battle structure to move three-person battles or change their count in each round. Winner slots intentionally remain blank for handwriting.
+Use Styles & divisions to define styles (Hip Hop, Modern, and Contemporary are provided). In Registration, use each dancer's dropdown to select one or more styles. In Brackets & print, select a category, drag a name onto another slot to swap, and expand Battle structure to move three-person battles or change their count in each round. Winner slots intentionally remain blank for handwriting.
+
+Optionally enable Under / Over for any style and set its age cutoff. Under means strictly below that age; Over includes the cutoff age and above. Categories appear in registration filters and as separate brackets. Missing or invalid birth years are flagged and block printing the affected style until corrected. Other styles can remain undivided. Event year controls ages, but neither event name nor year prints on the bracket; the page contains judges, style/division heading, and larger participant names.
+
+Existing version-1 saved events and event files migrate automatically to the style list. Registrations, saved placements, and judges are retained. Renaming a style keeps its registrations and brackets. Changing the cutoff or registrations flags stored brackets that need rebuilding rather than silently dropping dancers. Keep an exported backup before changing divisions extensively.
 
 Use Export event to keep a backup; local saving belongs to the current browser and address. To print, choose Print / Save PDF, select A4 landscape, and disable browser headers and footers for a clean page.
 
-Validation: `npm run build` checks TypeScript and creates the production build. `node --experimental-strip-types bracket.test.mjs` checks bracket integrity for 0–256 entrants (Node 24 recommended).
+Validation: `npm run build` checks TypeScript and creates the production build. `node --experimental-strip-types bracket.test.mjs` checks bracket integrity for 0–256 entrants; `node --experimental-strip-types event.test.mjs` checks migration, style registration, division boundaries, missing ages, and import validation (Node 24 recommended).
 
 ## Current limitations
 
 - Each style prints on one A4 page. Larger brackets shrink; multi-page continuation layouts are not implemented yet.
 - No spreadsheet/CSV import yet; event JSON export/import is available.
-- Style names are case-sensitive; use consistent spelling.
 - Browser interaction and print appearance still need visual verification on the user's computer.
 
 ## Core workflow
