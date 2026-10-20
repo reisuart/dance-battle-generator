@@ -37,8 +37,7 @@ function Sheet({ sheet, guides = false }: { sheet: StickerSheet; guides?: boolea
   return <article className={`sticker-sheet${guides ? ' sticker-guides' : ''}`} aria-label={`Sticker sheet ${sheet.page}`}>
     {Array.from({ length: 4 }, (_, i) => {
       const label = sheet.labels[i]
-      const category = label?.category
-      const heading = category ? `${category.style.name}${category.division === 'all' ? '' : category.division === 'under' ? ' Under' : ' Over'}`.toUpperCase() : ''
+      const heading = label?.category.label.toUpperCase() || ''
       return <section key={i} className="sticker-label" aria-label={label ? `Number ${label.number}, ${label.name}` : 'Unused sticker'}>
         {label && <><div className="sticker-heading"><StickerText text={heading} size={50} className="sticker-style" /></div><div className="sticker-number-wrap"><StickerText text={String(label.number)} size={90 * 96 / 25.4} className="sticker-number" /></div><StickerText text={label.name} size={50} className="sticker-name" twoLines /></>}
       </section>

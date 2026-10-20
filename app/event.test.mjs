@@ -66,3 +66,13 @@ assert.deepEqual(sortPeopleByAge(ageEntries,2026,'descending').map(p=>p.id),['ol
 assert.deepEqual(ageEntries.map(p=>p.id),['older','missing','young','same','invalid'])
 assert.equal(sortPeopleByAge(ageEntries,2026,'none'),ageEntries)
 console.log('Age sorting passed: youngest/oldest, stable ties, missing ages last, original order preserved.')
+
+const { categoryLabel } = await import('./src/event.ts')
+const styleForNames={id:'label-style',name:'Hip Hop',split:true,cutoff:14}
+assert.equal(categoryLabel(styleForNames,'under'),'Hip Hop Under')
+assert.equal(categoryLabel(styleForNames,'over'),'Hip Hop Over')
+assert.equal(categoryLabel(styleForNames,'all'),'Hip Hop')
+assert.equal(categoryLabel({...styleForNames,cutoff:18},'over'),'Hip Hop Over')
+const labelEvent=fresh();labelEvent.styles=[styleForNames]
+assert.deepEqual(categories(labelEvent).map(c=>c.label),['Hip Hop Under','Hip Hop Over'])
+console.log('Category label checks passed: style plus Under/Over only, independent of age cutoff.')

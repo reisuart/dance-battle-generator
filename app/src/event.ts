@@ -34,10 +34,14 @@ export function division(person: Person, style: DanceStyle, year: number): 'all'
   return years === null ? 'pending' : years < style.cutoff ? 'under' : 'over'
 }
 
+export function categoryLabel(style: DanceStyle, division: 'all' | 'under' | 'over'): string {
+  return style.name + (division === 'all' ? '' : division === 'under' ? ' Under' : ' Over')
+}
+
 export function categories(event: BattleEvent): Category[] {
   return event.styles.flatMap(style => (style.split ? ['under', 'over'] as const : ['all'] as const).map(d => ({
     id: `${style.id}:${d}`, style, division: d,
-    label: style.name + (d === 'all' ? '' : d === 'under' ? ` · Under ${style.cutoff}` : ` · Over ${style.cutoff} (${style.cutoff}+)`),
+    label: categoryLabel(style, d),
   })))
 }
 

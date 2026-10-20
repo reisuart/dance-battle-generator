@@ -6,7 +6,7 @@ import BattleStructure from './BattleStructure'
 import PaperPreview from './PaperPreview'
 import StylePicker, { SelectOverlay } from './StylePicker'
 import StickersPage from './StickersPage'
-import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
+import { age, categories, categoryLabel, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, sortPeopleByAge, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
 import './App.css'
 import './Sidebar.css'
@@ -137,8 +137,7 @@ function App() {
     const x = (r: number) => edge + r * (boxWidth + gap)
     return <article className="paper" key={category.id}>
       <div className="judges"><b>JUDGES</b>{l.judges.map((judge, i) => <span className="judge-box" key={i}>{judge.trim().toUpperCase() || '\u00a0'}</span>)}</div>
-      <h2>{category.style.name.toUpperCase()} <span>BATTLE 1VS1</span></h2>
-      {category.division !== 'all' && <div className="division-heading">{category.division === 'under' ? `UNDER ${category.style.cutoff}` : `OVER ${category.style.cutoff} · AGE ${category.style.cutoff}+`}</div>}
+      <h2>{category.label.toUpperCase()} <span>BATTLE 1VS1</span></h2>
       {l.ids.length ? <svg viewBox={`0 0 ${width} ${height}`} aria-label={`${category.label} bracket`}>
         {l.rounds.flatMap((g, r) => {
           let offset = 0
@@ -201,7 +200,7 @@ function App() {
           return <section className="style-config" key={s.id}>
             <div className="style-config-name"><label>STYLE NAME<input aria-label={`Style name: ${s.name}`} key={s.name} defaultValue={s.name} onBlur={e => { if (e.target.value !== s.name && !renameStyle(s.id, e.target.value)) e.target.value = s.name }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><small>{count} registered</small></div>
             <label className="toggle"><input type="checkbox" checked={s.split} onChange={e => setStyle(s.id, { split: e.target.checked })} />Split into Under / Over</label>
-            {s.split ? <div className="cutoff"><label>AGE CUTOFF<input type="number" min="1" max="120" aria-label={`Age cutoff for ${s.name}`} key={s.cutoff} defaultValue={s.cutoff} onBlur={e => { const n = Number(e.target.value); if (Number.isInteger(n) && n >= 1 && n <= 120) setStyle(s.id, { cutoff: n }); else { e.target.value = String(s.cutoff); setMessage('The age cutoff must be a whole number from 1 to 120.') } }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><p>Under {s.cutoff}: ages below {s.cutoff}.<br />Over {s.cutoff}: ages {s.cutoff} and above.</p></div> : <p className="all-ages">All ages in one bracket.</p>}
+            {s.split ? <div className="cutoff"><label>AGE CUTOFF<input type="number" min="1" max="120" aria-label={`Age cutoff for ${s.name}`} key={s.cutoff} defaultValue={s.cutoff} onBlur={e => { const n = Number(e.target.value); if (Number.isInteger(n) && n >= 1 && n <= 120) setStyle(s.id, { cutoff: n }); else { e.target.value = String(s.cutoff); setMessage('The age cutoff must be a whole number from 1 to 120.') } }} onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur() }} /></label><p>Under: ages below {s.cutoff}.<br />Over: ages {s.cutoff} and above.</p></div> : <p className="all-ages">All ages in one bracket.</p>}
             <button disabled={count > 0} title={count ? 'Remove this style from dancers before deleting it.' : 'Remove unused style'} onClick={() => { if (confirm(`Remove ${s.name}?`)) { setEvent(e => ({ ...e, styles: e.styles.filter(x => x.id !== s.id) })); setFilter('all') } }}>Remove</button>
           </section>
         })}</div>
@@ -220,7 +219,7 @@ function App() {
               {(['name', 'nickname', 'birth'] as const).map(field => <td key={field}><input aria-label={`${field} for dancer ${i + 1}`} type={field === 'birth' ? 'number' : 'text'} min={field === 'birth' ? 1900 : undefined} max={field === 'birth' ? event.year : undefined} value={p[field]} placeholder={field === 'birth' ? '2000' : field === 'name' ? 'Dancer name' : 'Stage name'} onChange={e => update(p.id, field, e.target.value)} /></td>)}
               <td className="age">{age(p, event.year) ?? '—'}</td>
               <td><StylePicker styles={event.styles} selected={p.styles} label={`Styles for dancer ${i + 1}`} onChange={ids => update(p.id, 'styles', ids)} onManage={() => setTab('settings')} /></td>
-              {hasDivisions && <td className="division-cell">{event.styles.filter(s => s.split && p.styles.includes(s.id)).map(s => <span className={division(p, s, event.year) === 'pending' ? 'division-badge pending' : 'division-badge'} key={s.id}>{s.name} · {division(p, s, event.year) === 'pending' ? 'Birth year needed' : division(p, s, event.year) === 'under' ? `Under ${s.cutoff}` : `Over ${s.cutoff} (${s.cutoff}+)`}</span>)}</td>}
+              {hasDivisions && <td className="division-cell">{event.styles.filter(s => s.split && p.styles.includes(s.id)).map(s => <span className={division(p, s, event.year) === 'pending' ? 'division-badge pending' : 'division-badge'} key={s.id}>{division(p, s, event.year) === 'pending' ? `${s.name}: Birth year needed` : categoryLabel(s, division(p, s, event.year) === 'under' ? 'under' : 'over')}</span>)}</td>}
               <td><button className="remove" aria-label={`Remove dancer ${i + 1}`} onClick={() => { if (confirm(`Remove ${p.nickname || p.name || 'this dancer'}?`)) setEvent({ ...event, people: event.people.filter(d => d.id !== p.id) }) }}><X size={16} aria-hidden="true" /></button></td>
             </tr>
           })}
