@@ -4,7 +4,24 @@ A planned browser app for organising dance battles and printing clean A4 bracket
 
 ## Project status
 
-This repository currently contains the agreed requirements and development roadmap. The application has not been implemented yet.
+A first local version is implemented in `app/`: registration, age calculation, style-specific brackets, two- and three-person battle layouts, drag or click swapping, judges, local saving, event export/import, and A4 printing.
+
+## Run locally
+
+From `app/`, run `npm install` once, then `npm run dev`. Open the exact Local URL printed in the terminal; Vite may choose a different port if another app is running.
+
+Use Registration to add dancers. Separate styles with commas. In Brackets & print, select a style, drag a name onto another slot to swap, and expand Battle structure to move three-person battles or change their count in each round. Winner slots intentionally remain blank for handwriting.
+
+Use Export event to keep a backup; local saving belongs to the current browser and address. To print, choose Print / Save PDF, select A4 landscape, and disable browser headers and footers for a clean page.
+
+Validation: `npm run build` checks TypeScript and creates the production build. `node --experimental-strip-types bracket.test.mjs` checks bracket integrity for 0–256 entrants (Node 24 recommended).
+
+## Current limitations
+
+- Each style prints on one A4 page. Larger brackets shrink; multi-page continuation layouts are not implemented yet.
+- No spreadsheet/CSV import yet; event JSON export/import is available.
+- Style names are case-sensitive; use consistent spelling.
+- Browser interaction and print appearance still need visual verification on the user's computer.
 
 ## Core workflow
 
