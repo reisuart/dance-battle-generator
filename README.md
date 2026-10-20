@@ -16,6 +16,8 @@ Optionally enable Under / Over for any style and set its age cutoff. Under means
 
 Existing version-1 saved events and event files migrate automatically to the style list. Registrations, saved placements, and judges are retained. Renaming a style keeps its registrations and brackets. Changing the cutoff or registrations flags stored brackets that need rebuilding rather than silently dropping dancers. Keep an exported backup before changing divisions extensively.
 
+The entire paper uses locally bundled Montserrat. Participant labels are larger and uppercase in preview and print; registration spelling is preserved. Long names fit inside their boxes. The Print button waits for the font to load.
+
 Use Export event to keep a backup; local saving belongs to the current browser and address. To print, choose Print / Save PDF, select A4 landscape, and disable browser headers and footers for a clean page.
 
 Validation: `npm run build` checks TypeScript and creates the production build. `node --experimental-strip-types bracket.test.mjs` checks bracket integrity for 0–256 entrants; `node --experimental-strip-types event.test.mjs` checks migration, style registration, division boundaries, missing ages, and import validation (Node 24 recommended).

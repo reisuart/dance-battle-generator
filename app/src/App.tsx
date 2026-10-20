@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import '@fontsource-variable/montserrat'
 import { choices, rounds } from './bracket'
 import { age, categories, division, fresh, getLayout, normalize, parseEvent, participants, pendingPeople, stale, STORAGE_KEY } from './event'
 import type { BattleEvent, Category, DanceStyle, Layout, Person } from './event'
@@ -7,6 +8,25 @@ import './App.css'
 function load(): { event: BattleEvent; error: boolean } {
   try { const raw = localStorage.getItem(STORAGE_KEY); return { event: raw ? parseEvent(JSON.parse(raw)) : fresh(), error: false } }
   catch { return { event: fresh(), error: true } }
+}
+
+function BracketName({ text, x, y, width }: { text: string; x: number; y: number; width: number }) {
+  const ref = useRef<SVGTextElement>(null)
+  useEffect(() => {
+    let cancelled = false
+    void document.fonts.load('700 32px "Montserrat Variable"', text).then(() => {
+      const node = ref.current
+      if (!node || cancelled) return
+      node.removeAttribute('textLength')
+      // Canvas also measures the hidden print copy, whose SVG has no screen dimensions.
+      const context = document.createElement('canvas').getContext('2d')
+      if (!context) return
+      context.font = '700 32px "Montserrat Variable"'
+      if (context.measureText(text).width > width) node.setAttribute('textLength', String(width))
+    }).catch(() => { /* The Print button reports a font-loading failure. */ })
+    return () => { cancelled = true }
+  }, [text, width])
+  return <text ref={ref} className="printed-name" x={x} y={y} fontWeight="700" fontSize="32" lengthAdjust="spacingAndGlyphs">{text}</text>
 }
 
 function App() {
@@ -73,22 +93,26 @@ function App() {
     const a = document.createElement('a'); a.href = url; a.download = 'dance-battle-event.json'; a.click()
     setTimeout(() => URL.revokeObjectURL(url), 1000)
   }
-  const print = (every: boolean) => {
+  const print = async (every: boolean) => {
     const targets = every ? groups.filter(c => participants(event, c).length) : active ? [active] : []
     const affectedStyles = new Set(targets.map(c => c.style.id))
     if (pending.some(p => every || affectedStyles.has(p.style.id))) { setMessage('Add valid birth years for dancers awaiting age divisions before printing this style.'); return }
     if (targets.some(c => stale(event, c))) { setMessage('Registration or age divisions changed. Update the affected brackets before printing.'); return }
-    setAll(every); setTimeout(() => window.print(), 100)
+    try {
+      await Promise.all([document.fonts.load('400 16px "Montserrat Variable"'), document.fonts.load('700 32px "Montserrat Variable"')])
+      await document.fonts.ready
+      setAll(every); setTimeout(() => window.print(), 100)
+    } catch { setMessage('The print font could not load. Refresh the page and try printing again.') }
   }
 
   function paper(category: Category) {
-    const l = getLayout(event, category), height = Math.max(480, l.ids.length * 56)
-    const columns: { text: string; y: number; id?: string }[][] = [l.ids.map((id, i) => ({ text: name(id), y: (i + .5) * height / l.ids.length, id }))]
+    const l = getLayout(event, category), height = Math.max(480, l.ids.length * 60)
+    const columns: { text: string; y: number; id?: string }[][] = [l.ids.map((id, i) => ({ text: name(id).toUpperCase(), y: (i + .5) * height / l.ids.length, id }))]
     l.rounds.forEach((g, r) => {
       let offset = 0
       columns.push(g.map(n => { const inputs = columns[r].slice(offset, offset + n); offset += n; return { text: '', y: inputs.reduce((a, p) => a + p.y, 0) / n } }))
     })
-    const step = 220, first = 300, x = (r: number) => r === 0 ? 0 : first + (r - 1) * step
+    const step = 220, first = 340, x = (r: number) => r === 0 ? 0 : first + (r - 1) * step
     const box = (r: number) => (r === 0 ? first : step) - 38
     const width = first + Math.max(0, columns.length - 1) * step - 28
     return <article className="paper" key={category.id}>
@@ -100,16 +124,16 @@ function App() {
           let offset = 0
           return g.flatMap((n, b) => {
             const inputs = columns[r].slice(offset, offset + n); offset += n
-            return inputs.map((p, k) => <path key={`${r}-${b}-${k}`} d={`M ${x(r) + box(r)} ${p.y + 22} H ${x(r) + box(r) + 16} V ${columns[r + 1][b].y + 22} H ${x(r + 1)}`} fill="none" stroke="#a0a5a0" strokeWidth="1.5" />)
+            return inputs.map((p, k) => <path key={`${r}-${b}-${k}`} d={`M ${x(r) + box(r)} ${p.y + 24} H ${x(r) + box(r) + 16} V ${columns[r + 1][b].y + 24} H ${x(r + 1)}`} fill="none" stroke="#a0a5a0" strokeWidth="1.5" />)
           })
         })}
         {columns.flatMap((col, r) => col.map((p, i) => <g key={`${r}-${i}`}>
-          <rect x={x(r)} y={p.y} width={box(r)} height="44" rx="4" fill="white" stroke={r === 0 && selected === p.id ? '#d97947' : '#969d95'} strokeWidth="1.5" />
+          <rect x={x(r)} y={p.y} width={box(r)} height="48" rx="4" fill="white" stroke={r === 0 && selected === p.id ? '#d97947' : '#969d95'} strokeWidth="1.5" />
           {r === 0 && <>
-            <foreignObject className="interactive-slot" x={x(r) + 4} y={p.y + 2} width={box(r) - 8} height="40">
-              <button className="slot" style={{ fontSize: p.text.length > 23 ? 18 : 23 }} title={p.text} draggable onDragStart={e => e.dataTransfer.setData('text/plain', p.id!)} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (category.id === active?.id) swap(e.dataTransfer.getData('text/plain'), i) }} onClick={() => category.id === active?.id && (selected ? swap(selected, i) : setSelected(p.id!))}>{p.text}</button>
+            <foreignObject className="interactive-slot" x={x(r) + 4} y={p.y + 2} width={box(r) - 8} height="44">
+              <button className="slot" title={p.text} aria-label={p.text} draggable onDragStart={e => e.dataTransfer.setData('text/plain', p.id!)} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (category.id === active?.id) swap(e.dataTransfer.getData('text/plain'), i) }} onClick={() => category.id === active?.id && (selected ? swap(selected, i) : setSelected(p.id!))} />
             </foreignObject>
-            <text className="printed-name" x={x(r) + 9} y={p.y + 29} fontFamily="Arial, sans-serif" fontWeight="700" fontSize="23" textLength={p.text.length > 19 ? box(r) - 18 : undefined} lengthAdjust="spacingAndGlyphs">{p.text}</text>
+            <BracketName text={p.text} x={x(r) + 9} y={p.y + 35} width={box(r) - 18} />
           </>}
         </g>))}
       </svg> : <div className="empty">No dancers in this category yet.</div>}
