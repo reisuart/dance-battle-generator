@@ -84,6 +84,6 @@ th .age-sort,th .age-sort:hover{display:inline-flex;align-items:center;gap:6px;b
 .registration-sort-status button{padding:5px 9px;font-size:11px}
 
 /* Shared Lucide sizing keeps icon controls aligned with their labels. */
-button:has(>.lucide),.button:has(>.lucide){display:inline-flex;align-items:center;justify-content:center;gap:7px}
+button:not(.style-picker-trigger):has(>.lucide),.button:has(>.lucide){display:inline-flex;align-items:center;justify-content:center;gap:7px}
 .lucide{flex-shrink:0}
 .participant-grip{color:var(--muted,#99a58e)}
