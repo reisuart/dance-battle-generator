@@ -119,7 +119,7 @@ function App() {
       let offset = 0
       columns.push(g.map(n => { const inputs = columns[r].slice(offset, offset + n); offset += n; return { text: '', y: inputs.reduce((a, p) => a + p.y, 0) / n } }))
     })
-    const width = 1000, gap = 32, edge = 1
+    const width = 1000, gap = 32, edge = 1, cornerRadius = 4
     const boxWidth = (width - edge * 2 - gap * (columns.length - 1)) / columns.length
     const x = (r: number) => edge + r * (boxWidth + gap)
     return <article className="paper" key={category.id}>
@@ -131,11 +131,19 @@ function App() {
           let offset = 0
           return g.flatMap((n, b) => {
             const inputs = columns[r].slice(offset, offset + n); offset += n
-            return inputs.map((p, k) => <path key={`${r}-${b}-${k}`} d={`M ${x(r) + boxWidth} ${p.y + 24} H ${x(r) + boxWidth + gap / 2} V ${columns[r + 1][b].y + 24} H ${x(r + 1)}`} fill="none" stroke="#a0a5a0" strokeWidth="1.5" />)
+            return inputs.map((p, k) => {
+              const startX = x(r) + boxWidth, endX = x(r + 1), midX = startX + gap / 2
+              const startY = p.y + 24, endY = columns[r + 1][b].y + 24
+              const direction = Math.sign(endY - startY)
+              const radius = Math.min(cornerRadius, Math.abs(endY - startY) / 2)
+              const path = radius === 0 ? `M ${startX} ${startY} H ${endX}`
+                : `M ${startX} ${startY} H ${midX - radius} Q ${midX} ${startY} ${midX} ${startY + direction * radius} V ${endY - direction * radius} Q ${midX} ${endY} ${midX + radius} ${endY} H ${endX}`
+              return <path key={`${r}-${b}-${k}`} d={path} fill="none" stroke="#a0a5a0" strokeWidth="1.5" />
+            })
           })
         })}
         {columns.flatMap((col, r) => col.map((p, i) => <g key={`${r}-${i}`}>
-          <rect x={x(r)} y={p.y} width={boxWidth} height="48" rx="4" fill="white" stroke={r === 0 && selected === p.id ? '#d97947' : '#969d95'} strokeWidth="1.5" />
+          <rect x={x(r)} y={p.y} width={boxWidth} height="48" rx={cornerRadius} fill="white" stroke={r === 0 && selected === p.id ? '#d97947' : '#969d95'} strokeWidth="1.5" />
           {r === 0 && <>
             <foreignObject className="interactive-slot" x={x(r) + 4} y={p.y + 2} width={boxWidth - 8} height="44">
               <button className="slot" title={p.text} aria-label={p.text} draggable onDragStart={e => e.dataTransfer.setData('text/plain', p.id!)} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); if (category.id === active?.id) swap(e.dataTransfer.getData('text/plain'), i) }} onClick={() => category.id === active?.id && (selected ? swap(selected, i) : setSelected(p.id!))} />
