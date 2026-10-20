@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { Printer } from 'lucide-react'
+import { Printer, ZoomIn, ZoomOut } from 'lucide-react'
 import { categories, pendingPeople } from './event'
 import type { BattleEvent } from './event'
 import { stickerNameLines, stickerSheets } from './stickers'
@@ -52,6 +52,7 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
   const [displayName, setDisplayName] = useState<'nickname' | 'name'>('nickname')
   const [guides, setGuides] = useState(true)
   const [optimize, setOptimize] = useState(false)
+  const [previewWidth, setPreviewWidth] = useState(280)
   const [printAll, setPrintAll] = useState(false)
   const [error, setError] = useState('')
   const printSource = useRef<HTMLDivElement>(null)
@@ -111,8 +112,8 @@ export default function StickersPage({ event, onReview }: { event: BattleEvent; 
       <div className="sticker-print-actions"><button className="primary" disabled={!current.length} onClick={() => void print(false)}><Printer size={16} aria-hidden="true" />Print / Save PDF</button>{scope !== 'all' && <button disabled={!sheets.length} onClick={() => void print(true)}>Print all categories</button>}</div>
     </aside>
     <section className="panel sticker-preview-panel" aria-label="Sticker page previews">
-      <header className="sticker-preview-header"><h2>Page preview</h2><span>{optimize ? 'Optimized sheets' : 'Separate categories'}</span></header>
-      <div className="sticker-previews" tabIndex={0} aria-label="Scroll sticker pages">{current.length ? current.map((sheet, i) => <section className="canvas" key={sheet.id}><div className="canvas-label"><span>{[...new Set(sheet.labels.map(l => l.category.label))].join(' / ')}</span><span>SHEET {i + 1} / {current.length}</span></div><PaperPreview widthMm={210} heightMm={297}><Sheet sheet={sheet} guides={guides} /></PaperPreview></section>) : <div className="empty">No dancers in the selected categories. Register dancers and select their styles to generate stickers.</div>}</div>
+      <header className="sticker-preview-header"><div className="sticker-preview-title"><h2>Page preview</h2><span>{optimize ? 'Optimized sheets' : 'Separate categories'}</span></div><label className="preview-size-control"><span>Preview size</span><ZoomOut size={16} aria-hidden="true" /><input type="range" min="220" max="600" step="20" value={previewWidth} onChange={e => setPreviewWidth(Number(e.target.value))} aria-label="Preview size" /><ZoomIn size={16} aria-hidden="true" /></label></header>
+      <div className="sticker-previews" tabIndex={0} aria-label="Scroll sticker pages">{current.length ? current.map((sheet, i) => <section className="canvas" key={sheet.id} style={{ width: previewWidth }}><div className="canvas-label"><span>{[...new Set(sheet.labels.map(l => l.category.label))].join(' / ')}</span><span>SHEET {i + 1} / {current.length}</span></div><PaperPreview widthMm={210} heightMm={297}><Sheet sheet={sheet} guides={guides} /></PaperPreview></section>) : <div className="empty">No dancers in the selected categories. Register dancers and select their styles to generate stickers.</div>}</div>
     </section>
     </div>
     {createPortal(<div ref={printSource} className="print-area sticker-print-area">{(printAll ? sheets : current).map(sheet => <Sheet sheet={sheet} key={sheet.id} />)}</div>, document.body)}

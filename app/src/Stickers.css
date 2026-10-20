@@ -6,7 +6,13 @@
 .sticker-options .toggle{padding-bottom:11px}
 .sticker-print-note{padding:18px 25px;border-top:1px solid var(--line,#354237);font-size:12px;line-height:1.7;color:var(--muted,#777)}
 .sticker-number-note{font-size:12px;margin:0;padding:0 25px 20px}
-.sticker-previews{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:24px;align-items:start}
+.sticker-previews{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start;align-content:flex-start}
+.sticker-previews>.canvas{flex:0 0 auto;min-width:0;max-width:100%;overflow:hidden}
+.sticker-preview-header{flex-wrap:wrap}
+.sticker-preview-title{display:flex;flex-direction:column;gap:5px}
+.sticker-preview-title>span{font-size:11px;color:var(--muted,#a2b09d)}
+.preview-size-control{display:flex;align-items:center;gap:9px;font-size:11px;letter-spacing:0;font-weight:400;color:var(--muted,#a2b09d)}
+.preview-size-control input[type=range]{width:120px;height:20px;min-width:0;margin:0;padding:0;border:0;background:transparent;accent-color:var(--accent,#bad99b);cursor:pointer}
 .sticker-previews .canvas-label{font-size:10px;letter-spacing:.5px}
 @media(max-width:850px){.page-nav{flex-wrap:wrap}.sticker-controls .panel-head{flex-wrap:wrap;gap:16px}.sticker-controls .actions{flex-wrap:wrap}}
 
@@ -40,7 +46,7 @@
  .sticker-preview-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:15px;padding:20px;border-bottom:1px solid var(--line,#354237)}
  .sticker-preview-header h2{margin:0;font-size:15px}
  .sticker-preview-header>span{font-size:11px;color:var(--muted,#a2b09d)}
- .sticker-previews{min-height:0;overflow:auto;overscroll-behavior:contain;flex:1;padding:20px;scrollbar-gutter:stable;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+ .sticker-previews{min-height:0;overflow:auto;overscroll-behavior:contain;flex:1;padding:20px;scrollbar-gutter:stable}
  .sticker-previews .canvas-label{line-height:1.5;align-items:start}
  .sticker-previews .canvas-label>span:first-child{min-width:0;overflow-wrap:anywhere}
  .sticker-previews .canvas-label>span:last-child{white-space:nowrap;flex-shrink:0}
