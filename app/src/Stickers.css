@@ -9,3 +9,44 @@
 .sticker-previews{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:24px;align-items:start}
 .sticker-previews .canvas-label{font-size:10px;letter-spacing:.5px}
 @media(max-width:850px){.page-nav{flex-wrap:wrap}.sticker-controls .panel-head{flex-wrap:wrap;gap:16px}.sticker-controls .actions{flex-wrap:wrap}}
+
+/* Settings and preview each scroll within the viewport; the A4 sheets never reflow. */
+@media screen{
+ body.stickers-active{overflow:hidden}
+ body.stickers-active #root{height:100dvh;display:flex;flex-direction:column;min-height:0}
+ body.stickers-active .page-header{flex:0 0 auto}
+ body.stickers-active main{width:100%;flex:1;min-height:0;padding-top:24px;padding-bottom:24px;display:flex;flex-direction:column;overflow:hidden}
+ body.stickers-active main>.notice{flex-shrink:0}
+ .sticker-workspace{display:grid;grid-template-columns:340px minmax(0,1fr);gap:22px;flex:1;min-height:0}
+ .sticker-controls{margin:0;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+ .sticker-controls .panel-head{padding:22px 20px}
+ .sticker-controls .panel-head h2{font-size:20px}
+ .sticker-options{display:flex;flex-direction:column;align-items:stretch;gap:18px;padding:0 20px 22px}
+ .sticker-options .sticker-category,.sticker-options .sticker-name-choice,.sticker-options .sticker-start{width:100%}
+ .sticker-options .toggle{padding:0;align-items:flex-start;line-height:1.5}
+ .sticker-options .sticker-optimize{padding:12px;background:var(--raised,#232d26);border:1px solid var(--line,#354237);border-radius:7px}
+ .sticker-optimize input{margin-top:2px;flex-shrink:0}
+ .sticker-optimize strong{display:block;font-size:12px}
+ .sticker-optimize small{display:block;font-size:11px;color:var(--muted,#a2b09d);margin-top:4px;font-weight:400;line-height:1.5}
+ .sticker-usage{display:flex;flex-wrap:wrap;align-items:center;gap:7px 12px;padding:0 20px 18px;font-size:12px}
+ .sticker-usage>span{color:var(--muted,#a2b09d)}
+ .sticker-usage .sticker-savings{width:100%;color:var(--accent,#bad99b);font-weight:600}
+ .sticker-warning{margin:0 20px 16px}
+ .sticker-print-note{padding:16px 20px;font-size:11px}
+ .sticker-number-note{padding:0 20px 18px;font-size:11px}
+ .sticker-print-actions{display:flex;flex-direction:column;gap:9px;padding:18px 20px;border-top:1px solid var(--line,#354237);background:var(--surface,#1b231e);position:sticky;bottom:0;z-index:2}
+ .sticker-print-actions button{width:100%}
+ .sticker-preview-panel{display:flex;flex-direction:column;min-height:0;overflow:hidden}
+ .sticker-preview-header{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;gap:15px;padding:20px;border-bottom:1px solid var(--line,#354237)}
+ .sticker-preview-header h2{margin:0;font-size:15px}
+ .sticker-preview-header>span{font-size:11px;color:var(--muted,#a2b09d)}
+ .sticker-previews{min-height:0;overflow:auto;overscroll-behavior:contain;flex:1;padding:20px;scrollbar-gutter:stable;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))}
+ .sticker-previews .canvas-label{line-height:1.5;align-items:start}
+ .sticker-previews .canvas-label>span:first-child{min-width:0;overflow-wrap:anywhere}
+ .sticker-previews .canvas-label>span:last-child{white-space:nowrap;flex-shrink:0}
+ .sticker-controls:focus-visible,.sticker-previews:focus-visible{outline:2px solid #d77848;outline-offset:-3px}
+}
+@media screen and (max-width:850px){
+ .sticker-workspace{grid-template-columns:1fr;grid-template-rows:minmax(160px,.45fr) minmax(0,1fr);gap:15px}
+ body.stickers-active main{padding-top:15px;padding-bottom:15px}
+}

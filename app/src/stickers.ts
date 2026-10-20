@@ -1,7 +1,7 @@
 import { categories, participants } from './event.ts'
 import type { BattleEvent, Category } from './event.ts'
 
-export type Sticker = { personId: string; number: number; name: string }
+export type Sticker = { personId: string; number: number; name: string; category: Category }
 export type StickerSheet = { id: string; category: Category; page: number; labels: Sticker[] }
 
 export function stickerNameLines(text: string, measure: (value: string) => number, width: number): string[] {
@@ -20,16 +20,21 @@ export function stickerNameLines(text: string, measure: (value: string) => numbe
   return best
 }
 
-export function stickerSheets(event: BattleEvent, start = 1, displayName: 'nickname' | 'name' = 'nickname'): StickerSheet[] {
+export function stickerSheets(event: BattleEvent, start = 1, displayName: 'nickname' | 'name' = 'nickname', optimize = false, categoryIds?: string[]): StickerSheet[] {
   if (!Number.isInteger(start) || start < 1 || start > 9999) throw Error('Starting number must be between 1 and 9999')
-  return categories(event).flatMap(category => {
+  const sheets = categories(event).filter(category => !categoryIds || categoryIds.includes(category.id)).flatMap(category => {
     // Use registration order, independent of the age-sort view or bracket rearrangements.
     const labels = participants(event, category).map((p, i) => ({
-      personId: p.id, number: start + i,
+      personId: p.id, number: start + i, category,
       name: (displayName === 'nickname' ? p.nickname.trim() || p.name.trim() : p.name.trim() || p.nickname.trim()).toUpperCase(),
     }))
     return Array.from({ length: Math.ceil(labels.length / 4) }, (_, i) => ({
       id: `${category.id}:sheet-${i}`, category, page: i + 1, labels: labels.slice(i * 4, i * 4 + 4),
     }))
   })
+  if (!optimize) return sheets
+  const labels = sheets.flatMap(sheet => sheet.labels)
+  return Array.from({ length: Math.ceil(labels.length / 4) }, (_, i) => ({
+    id: `packed:sheet-${i}`, category: labels[i * 4].category, page: i + 1, labels: labels.slice(i * 4, i * 4 + 4),
+  }))
 }
